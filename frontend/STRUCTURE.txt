@@ -1,0 +1,57 @@
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── Header.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   └── Loading.jsx
+│   │   ├── Auth/
+│   │   │   ├── LoginForm.jsx
+│   │   │   └── RegisterForm.jsx
+│   │   ├── Provider/
+│   │   │   ├── ProviderCard.jsx
+│   │   │   ├── ProviderList.jsx
+│   │   │   └── ProviderDetail.jsx
+│   │   └── Booking/
+│   │       ├── BookingForm.jsx
+│   │       └── BookingList.jsx
+│   ├── pages/
+│   │   ├── Home.jsx
+│   │   ├── Auth/
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── RegisterPage.jsx
+│   │   │   └── ProfilePage.jsx
+│   │   ├── Provider/
+│   │   │   ├── ProviderPage.jsx
+│   │   │   └── ProviderDetailPage.jsx
+│   │   ├── Booking/
+│   │   │   ├── BookingPage.jsx
+│   │   │   └── MyBookingsPage.jsx
+│   │   ├── Admin/
+│   │   │   ├── DashboardPage.jsx
+│   │   │   └── ManageUsersPage.jsx
+│   │   └── NotFoundPage.jsx
+│   ├── services/
+│   │   ├── api.js
+│   │   ├── authService.js
+│   │   ├── userService.js
+│   │   ├── providerService.js
+│   │   └── bookingService.js
+│   ├── context/
+│   │   ├── AuthContext.jsx
+│   │   └── ThemeContext.jsx
+│   ├── hooks/
+│   │   ├── useAuth.js
+│   │   └── useFetch.js
+│   ├── utils/
+│   │   ├── constants.js
+│   │   ├── validators.js
+│   │   └── helpers.js
+│   ├── App.jsx
+│   └── main.jsx
+├── public/
+├── .env.example
+├── package.json
+├── vite.config.js
+└── tailwind.config.js

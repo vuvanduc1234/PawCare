@@ -1,0 +1,109 @@
+name: CD - Deploy to VPS
+
+# Trigger khi merge vào main
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🔐 Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 📡 Deploy to VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+
+          set -e
+
+          # Di chuyển tới thư mục project
+          cd /opt/pawcare || mkdir -p /opt/pawcare && cd /opt/pawcare
+
+          # Pull latest code
+          if [ -d .git ]; then
+            git pull origin main
+          else
+            git clone --branch main https://github.com/${{ github.repository }}.git .
+          fi
+
+          # Copy environment files
+          if [ ! -f .env ]; then
+            cp .env.example .env
+            echo "⚠️  .env created from .env.example - Please update with real values"
+          fi
+
+          # Pull latest Docker images
+          docker pull ${{ secrets.DOCKER_USERNAME }}/pawcare-backend:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/pawcare-frontend:latest
+
+          # Deploy using docker-compose
+          docker-compose -f docker-compose.prod.yml down || true
+          docker-compose -f docker-compose.prod.yml up -d
+
+          # Wait for services to be healthy
+          sleep 10
+
+          # Check health
+          if curl -f http://localhost:5000/api/health > /dev/null; then
+            echo "✓ Backend is healthy"
+          else
+            echo "✗ Backend health check failed"
+            exit 1
+          fi
+
+          echo "✓ Deploy completed successfully"
+          EOF
+
+      - name: 🔄 Verify Deployment
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "docker ps --filter 'label=com.docker.compose.project=pawcare'"
+
+      - name: 🔄 Rollback on Failure
+        if: failure()
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+
+          echo "⚠️  Deployment failed - Rolling back..."
+          cd /opt/pawcare
+
+          # Rollback to previous compose
+          docker-compose -f docker-compose.prod.yml down
+          git revert HEAD --no-edit
+          docker-compose -f docker-compose.prod.yml up -d
+
+          echo "✓ Rollback completed"
+          EOF
+
+      - name: 📧 Notify Success
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Deployment successful! App is live: https://${{ secrets.VPS_HOST }}'
+            })
+
+      - name: 📧 Notify Failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ Deployment failed and rolled back. Check logs for details.'
+            })
