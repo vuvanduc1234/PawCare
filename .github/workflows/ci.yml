@@ -103,7 +103,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./backend
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/pawcare-backend:latest
             ${{ secrets.DOCKER_USERNAME }}/pawcare-backend:${{ github.sha }}
@@ -114,7 +114,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./frontend
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/pawcare-frontend:latest
             ${{ secrets.DOCKER_USERNAME }}/pawcare-frontend:${{ github.sha }}
