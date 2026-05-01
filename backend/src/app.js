@@ -16,10 +16,25 @@ import adminRoutes from './routes/adminRoutes.js';
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  'http://localhost:5173',      // Local development
+  'http://localhost:3000',      // Alternative local port
+  'https://paw-care-five.vercel.app',  // Production frontend
+  process.env.FRONTEND_URL,     // Environment variable
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS not allowed'));
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 app.use(express.json());
