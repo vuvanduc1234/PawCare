@@ -2,6 +2,22 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { authService, saveUserToLocal } from '../../services/authService';
+import { useAuth } from '../../hooks/useAuth';
+
+/**
+ * Hàm lấy đường dẫn redirect theo role
+ */
+const getRedirectPath = (role) => {
+  switch (role) {
+    case 'admin':
+      return '/admin';
+    case 'provider':
+      return '/provider/dashboard';
+    case 'user':
+    default:
+      return '/';
+  }
+};
 
 /**
  * LoginForm: Component form đăng nhập
@@ -18,10 +34,11 @@ const LoginForm = () => {
   });
   const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   /**
    * Hàm xử lý submit form
-   * Gửi email, password tới backend
+   * Gửi email, password tới backend và redirect theo role
    */
   const onSubmit = async (data) => {
     try {
@@ -33,8 +50,12 @@ const LoginForm = () => {
         const { user, accessToken, refreshToken } = response.data;
         saveUserToLocal(user, accessToken, refreshToken);
 
-        // Chuyển hướng
-        navigate('/');
+        // Cập nhật AuthContext
+        login(user);
+
+        // Redirect theo role
+        const redirectPath = getRedirectPath(user.role);
+        navigate(redirectPath);
       }
     } catch (error) {
       setError('submit', {

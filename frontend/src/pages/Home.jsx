@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 /**
  * HomePage: Trang chủ của ứng dụng
@@ -6,63 +6,131 @@ import React from "react";
  */
 const HomePage = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-blue-600">PawCare</h1>
-          <p className="text-gray-600">
-            Nền tảng toàn diện cho người nuôi thú cưng
-          </p>
+    <div className="min-h-screen bg-[#2f90a3]">
+      <header className="relative z-10">
+        <div className="max-w-6xl mx-auto px-6 pt-8">
+          <nav className="flex flex-wrap items-center justify-between gap-4 text-white">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-[#f7b500] grid place-items-center text-[#2f90a3] font-bold">
+                PC
+              </div>
+              <span className="font-heading text-xl tracking-wide">
+                PawCare
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-6 text-sm font-semibold uppercase tracking-wider">
+              <a className="border-b-2 border-[#f7b500] pb-1" href="/">
+                Home
+              </a>
+              <a className="hover:text-[#ffeaa6]" href="/services">
+                Products
+              </a>
+              <a className="hover:text-[#ffeaa6]" href="/community">
+                Download
+              </a>
+              <a className="hover:text-[#ffeaa6]" href="/bookings">
+                Store
+              </a>
+            </div>
+            <button className="bg-[#f7b500] text-[#2f90a3] rounded-full px-4 py-1 text-xs font-bold uppercase shadow">
+              Search
+            </button>
+          </nav>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-500 to-blue-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Chào mừng đến PawCare</h2>
-          <p className="text-lg mb-8">
-            Tìm kiếm các dịch vụ tốt nhất cho thú cưng yêu quý của bạn
-          </p>
-          <button className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
-            Khám phá ngay
-          </button>
+      <section className="relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 pt-12 pb-20 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
+          <div className="text-white">
+            <p className="font-heading uppercase tracking-[0.3em] text-xs text-[#ffeaa6]">
+              Pet Shop
+            </p>
+            <h1 className="font-display text-[3rem] sm:text-[4.5rem] leading-none mt-4">
+              PET SHOP
+            </h1>
+            <h2 className="font-heading text-2xl sm:text-3xl mt-4">Pet Food</h2>
+            <p className="mt-4 max-w-md text-sm sm:text-base text-white/80">
+              Chăm sóc thú cưng theo cách vui nhộn. Tìm dịch vụ, đặt lịch, và
+              chia sẻ khoảnh khắc đáng yêu mỗi ngày.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-4">
+              <button className="bg-[#f7b500] text-[#2f90a3] px-6 py-3 rounded-full font-bold shadow-lg">
+                Book Now
+              </button>
+              <button className="border-2 border-white/70 text-white px-6 py-3 rounded-full font-semibold">
+                More Info
+              </button>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute -top-8 -left-6 h-24 w-24 rounded-full bg-[#f7b500]/80" />
+            <div className="absolute bottom-6 left-0 h-16 w-16 rounded-full bg-[#f7b500]/70" />
+            <div className="rounded-[2.5rem] bg-white/10 backdrop-blur-md border border-white/20 p-6 shadow-2xl">
+              <img
+                className="rounded-[2rem] object-cover w-full h-[320px]"
+                src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=crop&w=900&q=80"
+                alt="Happy dog"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute left-0 right-0 bottom-0 h-32 bg-[#f7b500]">
+          <div className="max-w-6xl mx-auto px-6 h-full flex items-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
+              <div className="text-[#2f90a3]">
+                <p className="font-heading text-lg">Pet care 24/7</p>
+                <p className="text-xs text-[#2f90a3]/80">Luon san sang</p>
+              </div>
+              <div className="text-[#2f90a3]">
+                <p className="font-heading text-lg">Top providers</p>
+                <p className="text-xs text-[#2f90a3]/80">Uy tin va nhanh</p>
+              </div>
+              <div className="text-[#2f90a3]">
+                <p className="font-heading text-lg">Booking de dang</p>
+                <p className="text-xs text-[#2f90a3]/80">Nhanh trong 1 phut</p>
+              </div>
+              <div className="text-[#2f90a3]">
+                <p className="font-heading text-lg">Cong dong vui ve</p>
+                <p className="text-xs text-[#2f90a3]/80">Chia se khoanh khac</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1 */}
-          <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
-            <h3 className="text-xl font-bold mb-2">Tìm Dịch Vụ</h3>
-            <p className="text-gray-600">
-              Khám phá hàng trăm dịch vụ chăm sóc thú cưng ở gần bạn
+      <main className="bg-[#f6f2ea]">
+        <div className="max-w-6xl mx-auto px-6 py-16 grid gap-6 md:grid-cols-3">
+          <div className="bg-white rounded-3xl p-6 shadow-xl border-4 border-[#2f90a3]/20">
+            <p className="font-heading text-lg text-[#2f90a3]">Tim dich vu</p>
+            <p className="text-sm text-slate-600 mt-2">
+              Kham pha spa, grooming, kham benh va dich vu tai nha cho be.
             </p>
           </div>
-
-          {/* Card 2 */}
-          <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
-            <h3 className="text-xl font-bold mb-2">Đặt Lịch Dễ Dàng</h3>
-            <p className="text-gray-600">
-              Đặt lịch với các provider chỉ trong vài click
+          <div className="bg-white rounded-3xl p-6 shadow-xl border-4 border-[#f7b500]/40">
+            <p className="font-heading text-lg text-[#2f90a3]">
+              Dat lich nhanh
+            </p>
+            <p className="text-sm text-slate-600 mt-2">
+              Chon thoi gian, thanh toan, nhan nhac lich tu dong.
             </p>
           </div>
-
-          {/* Card 3 */}
-          <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
-            <h3 className="text-xl font-bold mb-2">Đánh Giá & Nhận Xét</h3>
-            <p className="text-gray-600">
-              Đọc và để lại đánh giá để giúp những người khác
+          <div className="bg-white rounded-3xl p-6 shadow-xl border-4 border-[#2f90a3]/20">
+            <p className="font-heading text-lg text-[#2f90a3]">Danh gia that</p>
+            <p className="text-sm text-slate-600 mt-2">
+              Doc review, xem anh that va chon noi phu hop nhat.
             </p>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white mt-12 py-6">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p>&copy; 2024 PawCare. Tất cả quyền được bảo lưu.</p>
+      <footer className="bg-[#1f6a7a] text-white">
+        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <p className="font-heading text-sm">PawCare - Pet first, always.</p>
+          <p className="text-xs text-white/70">
+            2024 PawCare. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>

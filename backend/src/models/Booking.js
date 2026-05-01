@@ -16,7 +16,7 @@ const bookingSchema = new mongoose.Schema(
     },
     provider: {
       type: mongoose.Schema.ObjectId,
-      ref: 'Provider',
+      ref: 'User',
       required: true,
     },
     pet: {

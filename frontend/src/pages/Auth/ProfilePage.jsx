@@ -1,7 +1,6 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { userService } from '../services/userService';
-import { useFetch } from '../hooks/useFetch';
+import { useAuth } from '../../hooks/useAuth';
+import { userService } from '../../services/userService';
 
 /**
  * ProfilePage: Trang profile của user

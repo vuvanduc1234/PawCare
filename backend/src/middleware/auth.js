@@ -20,7 +20,10 @@ export const authenticate = (req, res, next) => {
     const decoded = verifyAccessToken(token);
     
     // Lưu thông tin user vào request
-    req.user = decoded;
+    req.user = {
+      ...decoded,
+      id: decoded.userId,
+    };
     next();
   } catch (error) {
     return res.status(401).json({
@@ -54,3 +57,6 @@ export const authorize =
 
     next();
   };
+
+// Backward-compatible alias
+export const auth = authenticate;

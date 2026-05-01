@@ -19,16 +19,16 @@ const router = express.Router();
 router.post('/', authenticate, authorize('user'), createBooking);
 
 /**
- * GET /api/bookings/my-bookings
+ * GET /api/bookings/my
  * Lấy danh sách booking của user
  */
-router.get('/my-bookings', authenticate, getMyBookings);
+router.get('/my', authenticate, getMyBookings);
 
 /**
- * GET /api/bookings/provider-bookings
+ * GET /api/bookings/provider
  * Lấy danh sách booking của Provider
  */
-router.get('/provider-bookings', authenticate, getProviderBookings);
+router.get('/provider', authenticate, getProviderBookings);
 
 /**
  * GET /api/bookings/:id

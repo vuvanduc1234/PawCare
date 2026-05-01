@@ -1,11 +1,14 @@
-import React, { createContext, useState, useEffect } from "react";
-import { getUserFromLocal, removeUserFromLocal } from "../services/authService";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { getUserFromLocal, removeUserFromLocal } from '../services/authService';
 
 /**
  * AuthContext: Quản lý trạng thái xác thực và thông tin user
  */
 export const AuthContext = createContext();
 
+/**
+ * AuthProvider: Provider bao bọc ứng dụng
+ */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,4 +64,18 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+/**
+ * ✅ Custom Hook: useAuth
+ * Đây là hook mà các component sẽ dùng để lấy dữ liệu auth
+ */
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+
+  return context;
 };

@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { authService, saveUserToLocal } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+
+const getRedirectPath = (role) => {
+  switch (role) {
+    case 'admin':
+      return '/admin';
+    case 'provider':
+      return '/provider/dashboard';
+    default:
+      return '/';
+  }
+};
 
 /**
  * RegisterForm: Component form đăng ký tài khoản mới
@@ -19,11 +31,9 @@ const RegisterForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
   const password = watch('password');
 
-  /**
-   * Hàm xử lý submit form đăng ký
-   */
   const onSubmit = async (data) => {
     try {
       setLoading(true);
@@ -38,7 +48,8 @@ const RegisterForm = () => {
       if (response.success) {
         const { user, accessToken, refreshToken } = response.data;
         saveUserToLocal(user, accessToken, refreshToken);
-        navigate('/');
+        login(user);
+        navigate(getRedirectPath(user.role));
       }
     } catch (error) {
       setError('submit', {

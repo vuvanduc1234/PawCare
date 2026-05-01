@@ -6,6 +6,7 @@ import {
   changePassword,
   getAllUsers,
   getUserById,
+  updateUserStatus,
 } from '../controllers/userController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
@@ -34,6 +35,12 @@ router.post('/change-password', authenticate, changePassword);
  * Lấy danh sách tất cả user (chỉ admin)
  */
 router.get('/', authenticate, authorize('admin'), getAllUsers);
+
+/**
+ * PATCH /api/users/:id/status
+ * Khóa/mở tài khoản user (admin)
+ */
+router.patch('/:id/status', authenticate, authorize('admin'), updateUserStatus);
 
 /**
  * GET /api/users/:id

@@ -149,3 +149,35 @@ export const getUserById = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Cập nhật trạng thái user (khóa/mở)
+ * PATCH /users/:id/status
+ */
+export const updateUserStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { isActive: Boolean(isActive) },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User không tồn tại',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Cập nhật trạng thái user thành công',
+      data: user.toJSON(),
+    });
+  } catch (error) {
+    next(error);
+  }
+};

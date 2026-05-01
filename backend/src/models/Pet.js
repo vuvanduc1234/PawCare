@@ -27,6 +27,15 @@ const petSchema = new mongoose.Schema(
       required: true,
     },
     color: String,
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'unknown'],
+      default: 'unknown',
+    },
+    notes: {
+      type: String,
+      default: '',
+    },
 
     // Thông tin y tế
     healthHistory: [

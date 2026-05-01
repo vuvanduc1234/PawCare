@@ -34,7 +34,7 @@ export const createProvider = async (req, res, next) => {
       phone,
       address,
       workingHours,
-      owner: req.user.userId,
+      owner: req.user.id,
     });
 
     await newProvider.save();
