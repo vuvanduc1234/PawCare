@@ -20,6 +20,7 @@ const allowedOrigins = [
   'http://localhost:5173',      // Local development
   'http://localhost:3000',      // Alternative local port
   'https://paw-care-five.vercel.app',  // Production frontend
+  'https://pawcare-c549.onrender.com', // Backend self-reference (if needed)
   process.env.FRONTEND_URL,     // Environment variable
 ].filter(Boolean);
 
