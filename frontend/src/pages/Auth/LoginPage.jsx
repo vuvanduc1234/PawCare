@@ -42,19 +42,6 @@ const LoginPage = () => {
               Đăng ký ngay
             </Link>
           </p>
-
-          {/* Demo Info */}
-          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-gray-700">
-              <span className="font-bold">Demo tài khoản:</span>
-            </p>
-            <p className="text-sm text-gray-600 mt-1">
-              ✉️ Email: <code>user@example.com</code>
-            </p>
-            <p className="text-sm text-gray-600">
-              🔑 Mật khẩu: <code>Password123</code>
-            </p>
-          </div>
         </div>
       </div>
     </>
