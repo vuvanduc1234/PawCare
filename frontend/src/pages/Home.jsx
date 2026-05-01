@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { Header } from '../components/common';
 
 /**
  * HomePage: Trang chủ của ứng dụng
@@ -7,37 +9,7 @@ import React from 'react';
 const HomePage = () => {
   return (
     <div className="min-h-screen bg-[#2f90a3]">
-      <header className="relative z-10">
-        <div className="max-w-6xl mx-auto px-6 pt-8">
-          <nav className="flex flex-wrap items-center justify-between gap-4 text-white">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-[#f7b500] grid place-items-center text-[#2f90a3] font-bold">
-                PC
-              </div>
-              <span className="font-heading text-xl tracking-wide">
-                PawCare
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-6 text-sm font-semibold uppercase tracking-wider">
-              <a className="border-b-2 border-[#f7b500] pb-1" href="/">
-                Home
-              </a>
-              <a className="hover:text-[#ffeaa6]" href="/services">
-                Products
-              </a>
-              <a className="hover:text-[#ffeaa6]" href="/community">
-                Download
-              </a>
-              <a className="hover:text-[#ffeaa6]" href="/bookings">
-                Store
-              </a>
-            </div>
-            <button className="bg-[#f7b500] text-[#2f90a3] rounded-full px-4 py-1 text-xs font-bold uppercase shadow">
-              Search
-            </button>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <section className="relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-6 pt-12 pb-20 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">

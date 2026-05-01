@@ -20,6 +20,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const savedUser = getUserFromLocal();
     if (savedUser) {
+      // Normalize role về lowercase
+      if (savedUser.role) {
+        savedUser.role = savedUser.role.toLowerCase();
+      }
       setUser(savedUser);
       setIsAuthenticated(true);
     }

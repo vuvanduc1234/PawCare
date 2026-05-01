@@ -5,6 +5,7 @@ import serviceService from '../../services/serviceService';
 import bookingService from '../../services/bookingService';
 import petService from '../../services/petService'; // ← Import đúng cách
 import { useAuth } from '../../hooks/useAuth';
+import { Header } from '../../components/common';
 
 /**
  * ServiceDetailPage: Trang chi tiết dịch vụ + Đặt lịch
@@ -194,7 +195,8 @@ const ServiceDetailPage = () => {
 
   return (
     <div className="service-detail-page bg-gray-50 min-h-screen pb-10">
-      {/* Header */}
+      <Header />
+      {/* Sub Header */}
       <div className="bg-white shadow">
         <div className="container mx-auto p-4 max-w-4xl">
           <button

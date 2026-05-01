@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import petService from '../../services/petService';
 import { useAuth } from '../../hooks/useAuth';
+import { Header } from '../../components/common';
 
 const PET_TYPES = [
   { value: 'dog', label: 'Chó', icon: '🐶' },
@@ -157,6 +158,7 @@ const PetListPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header />
       {/* Header bar */}
       <div className="bg-white shadow">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">

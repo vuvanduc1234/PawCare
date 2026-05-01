@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { userService } from '../../services/userService';
+import { Header } from '../../components/common';
 
 /**
  * ProfilePage: Trang profile của user
@@ -8,6 +10,7 @@ import { userService } from '../../services/userService';
  */
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = React.useState(false);
   const [formData, setFormData] = React.useState(user);
   const [loading, setLoading] = React.useState(false);
@@ -50,126 +53,142 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Hồ Sơ Cá Nhân</h1>
-
-      {/* Message */}
-      {message && (
-        <div
-          className={`mb-4 p-4 rounded-lg ${
-            message.includes('thành công')
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-          }`}
-        >
-          {message}
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="flex items-center gap-3 mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-gray-500 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-200 transition"
+          >
+            ←
+          </button>
+          <h1 className="text-3xl font-bold">Hồ Sơ Cá Nhân</h1>
         </div>
-      )}
 
-      {/* Profile Card */}
-      <div className="card">
-        {!isEditing ? (
-          <div className="space-y-4">
-            <p>
-              <strong>Tên:</strong> {user.fullName}
-            </p>
-            <p>
-              <strong>Email:</strong> {user.email}
-            </p>
-            <p>
-              <strong>Số điện thoại:</strong> {user.phone}
-            </p>
-            <p>
-              <strong>Địa chỉ:</strong>{' '}
-              {user.address?.street || 'Chưa cập nhật'}
-            </p>
-            <p>
-              <strong>Vai trò:</strong> {user.role}
-            </p>
-
-            <button onClick={() => setIsEditing(true)} className="btn-primary">
-              Chỉnh Sửa
-            </button>
+        {/* Message */}
+        {message && (
+          <div
+            className={`mb-4 p-4 rounded-lg ${
+              message.includes('thành công')
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {message}
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Full Name */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Tên</label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                className="input-field"
-              />
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Số điện thoại
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="input-field"
-              />
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Địa chỉ</label>
-              <input
-                type="text"
-                name="street"
-                value={formData.address?.street || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    address: {
-                      ...formData.address,
-                      street: e.target.value,
-                    },
-                  })
-                }
-                className="input-field"
-              />
-            </div>
-
-            {/* Bio */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Bio</label>
-              <textarea
-                name="bio"
-                value={formData.bio || ''}
-                onChange={handleChange}
-                className="input-field"
-                rows="3"
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary flex-1"
-              >
-                {loading ? 'Đang lưu...' : 'Lưu'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="btn-secondary flex-1"
-              >
-                Hủy
-              </button>
-            </div>
-          </form>
         )}
+
+        {/* Profile Card */}
+        <div className="card">
+          {!isEditing ? (
+            <div className="space-y-4">
+              <p>
+                <strong>Tên:</strong> {user.fullName}
+              </p>
+              <p>
+                <strong>Email:</strong> {user.email}
+              </p>
+              <p>
+                <strong>Số điện thoại:</strong> {user.phone}
+              </p>
+              <p>
+                <strong>Địa chỉ:</strong>{' '}
+                {user.address?.street || 'Chưa cập nhật'}
+              </p>
+              <p>
+                <strong>Vai trò:</strong> {user.role}
+              </p>
+
+              <button
+                onClick={() => setIsEditing(true)}
+                className="btn-primary"
+              >
+                Chỉnh Sửa
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Full Name */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Tên</label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  className="input-field"
+                />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Số điện thoại
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="input-field"
+                />
+              </div>
+
+              {/* Address */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Địa chỉ
+                </label>
+                <input
+                  type="text"
+                  name="street"
+                  value={formData.address?.street || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: {
+                        ...formData.address,
+                        street: e.target.value,
+                      },
+                    })
+                  }
+                  className="input-field"
+                />
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Bio</label>
+                <textarea
+                  name="bio"
+                  value={formData.bio || ''}
+                  onChange={handleChange}
+                  className="input-field"
+                  rows="3"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary flex-1"
+                >
+                  {loading ? 'Đang lưu...' : 'Lưu'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="btn-secondary flex-1"
+                >
+                  Hủy
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

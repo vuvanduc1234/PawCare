@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import bookingService from '../../services/bookingService';
 import { useAuth } from '../../context/AuthContext';
-
+import { Header } from '../../components/common';
 /**
  * MyBookingsPage: Halaman xem danh sách lịch đặt của người dùng
  * URL: /bookings
@@ -152,13 +152,22 @@ const MyBookingsPage = () => {
 
   return (
     <div className="my-bookings-page min-h-screen bg-gray-50">
+      <Header />
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="container mx-auto p-4 max-w-4xl">
-          <h1 className="text-3xl font-bold">📅 Lịch đặt của tôi</h1>
-          <p className="text-gray-600 mt-1">
-            Quản lý các lịch đặt dịch vụ cho thú cưng của bạn
-          </p>
+        <div className="container mx-auto p-4 max-w-4xl flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-gray-500 hover:text-gray-800 text-lg px-2 py-1 rounded hover:bg-gray-100 transition"
+          >
+            ←
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold">📅 Lịch đặt của tôi</h1>
+            <p className="text-gray-600 mt-1">
+              Quản lý các lịch đặt dịch vụ cho thú cưng của bạn
+            </p>
+          </div>
         </div>
       </div>
 

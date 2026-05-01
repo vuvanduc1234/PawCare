@@ -37,6 +37,7 @@ const Header = () => {
       return [
         { label: 'Dịch vụ', path: '/services' },
         { label: 'Bảng điều khiển', path: '/provider/dashboard' },
+        { label: 'Thêm dịch vụ', path: '/provider/services/new' },
       ];
     }
 

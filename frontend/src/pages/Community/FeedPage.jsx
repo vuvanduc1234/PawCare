@@ -3,6 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import postService from '../../services/postService';
 import PostCard from '../../components/Community/PostCard';
 import CreatePostForm from '../../components/Community/CreatePostForm';
+import { Header } from '../../components/common';
 
 /**
  * FeedPage: Trang feed bài đăng cộng đồng
@@ -61,8 +62,9 @@ const FeedPage = () => {
 
   return (
     <div className="feed-page min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="sticky top-0 bg-white shadow z-10">
+      <Header />
+      {/* Sub Header */}
+      <div className="bg-white shadow">
         <div className="container mx-auto p-4 max-w-2xl">
           <h1 className="text-2xl font-bold">🐾 Cộng đồng</h1>
           <p className="text-gray-600 text-sm">

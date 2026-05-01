@@ -48,6 +48,12 @@ const LoginForm = () => {
       if (response.success) {
         // Lưu thông tin user
         const { user, accessToken, refreshToken } = response.data;
+
+        // Normalize role về lowercase để tránh lỗi so sánh 'Provider' != 'provider'
+        if (user.role) {
+          user.role = user.role.toLowerCase();
+        }
+
         saveUserToLocal(user, accessToken, refreshToken);
 
         // Cập nhật AuthContext
@@ -59,7 +65,9 @@ const LoginForm = () => {
       }
     } catch (error) {
       setError('submit', {
-        message: error.response?.data?.message || 'Đăng nhập thất bại',
+        message:
+          error.response?.data?.message ||
+          'Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu.',
       });
     } finally {
       setLoading(false);
