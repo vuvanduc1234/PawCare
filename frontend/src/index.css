@@ -1,47 +1,124 @@
-/* Font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Bubblegum+Sans&family=Fredoka:wght@400;600;700&display=swap');
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400;1,600&family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Tailwind CSS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --primary-color: #3b82f6;
-  --secondary-color: #f59e0b;
-  --success-color: #10b981;
-  --danger-color: #ef4444;
+  /* PawCare brand colors — from reference image */
+  --teal: #1d6e6e;
+  --teal-dark: #155757;
+  --teal-light: #2a8a8a;
+  --teal-pale: #e8f4f4;
+  --peach: #f5a78a;
+  --peach-light: #fde8e0;
+  --peach-dark: #e08060;
+  --coral: #e07055;
+  --cream: #fdf6f3;
+  --cream-dark: #f5ede8;
+  --off: #ffffff;
+  --warm: #e07055;
+  --warm-light: #f5c4b5;
+  --warm-dark: #c05040;
+  --brown-dark: #1d2d2d;
+  --text-mid: #3d5555;
+  --text-light: #6e9090;
+  --sage: #4a9e8e;
+  --primary-color: #1d6e6e;
+  --secondary-color: #e07055;
+  --success-color: #4a9e8e;
+  --danger-color: #c0675a;
+
+  /* Aliases for backward compat */
+  --card-bg: #ffffff;
+  --border-light: #d9eded;
 }
 
 * {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Nunito', sans-serif;
+  box-sizing: border-box;
 }
 
 body {
-  @apply bg-gray-50;
+  background-color: var(--cream);
+  color: var(--brown-dark);
 }
 
-.font-display {
-  font-family: 'Bubblegum Sans', 'Fredoka', 'Poppins', sans-serif;
+.font-display, .font-heading {
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 700;
 }
 
-.font-heading {
-  font-family: 'Fredoka', 'Poppins', sans-serif;
-}
-
-/* Utility classes */
 .btn-primary {
-  @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition;
+  display: inline-block;
+  padding: 0.65rem 1.6rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 2rem;
+  background: var(--coral);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(224,112,85,0.3);
 }
+.btn-primary:hover { background: var(--warm-dark); transform: translateY(-1px); }
+
+.btn-outline {
+  display: inline-block;
+  padding: 0.63rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 2rem;
+  background: transparent;
+  color: var(--teal);
+  border: 2px solid var(--teal);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-outline:hover { background: var(--teal); color: #fff; }
 
 .btn-secondary {
-  @apply bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition;
+  display: inline-block;
+  padding: 0.65rem 1.6rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 2rem;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
 }
+.btn-secondary:hover { background: var(--teal-light); }
 
 .card {
-  @apply bg-white p-6 rounded-lg shadow hover:shadow-lg transition;
+  background: #fff;
+  border: 1.5px solid var(--border-light);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
+.card:hover { border-color: var(--teal-light); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(29,110,110,0.1); }
 
 .input-field {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  font-size: 0.875rem;
+  background: var(--teal-pale);
+  border: 1.5px solid var(--border-light);
+  border-radius: 0.5rem;
+  color: var(--brown-dark);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
+.input-field:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(29,110,110,0.12);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--teal-pale); }
+::-webkit-scrollbar-thumb { background: var(--teal-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--teal); }
