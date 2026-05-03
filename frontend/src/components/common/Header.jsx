@@ -2,6 +2,40 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
+// Helper: hiển thị flaticon hoặc fallback emoji nếu font chưa load
+const NavIcon = ({ iconClass, emoji, style = {} }) => {
+  const [loaded, setLoaded] = React.useState(null); // null=checking, true/false
+
+  React.useEffect(() => {
+    // Kiểm tra Flaticon đã load chưa bằng cách đo width của icon test
+    const el = document.createElement('i');
+    el.className = 'fi fi-rr-home';
+    el.style.cssText =
+      'position:absolute;visibility:hidden;font-size:20px;left:-9999px';
+    document.body.appendChild(el);
+    const check = () => {
+      const w = el.offsetWidth;
+      document.body.removeChild(el);
+      setLoaded(w > 0);
+    };
+    // Nếu CSS chưa parse xong thì chờ thêm
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(check);
+    } else {
+      setTimeout(check, 800);
+    }
+  }, []);
+
+  // Khi đang check hoặc load thành công → dùng icon
+  if (loaded !== false) {
+    return (
+      <i className={`${iconClass}`} style={{ fontSize: '1.2rem', ...style }} />
+    );
+  }
+  // Fallback emoji
+  return <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{emoji}</span>;
+};
+
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -668,9 +702,9 @@ const Header = () => {
               >
                 <span className="nav-icon">
                   {item.icon?.startsWith('fi ') ? (
-                    <i
-                      className={`${item.icon} flaticon-white`}
-                      style={{ fontSize: '1.2rem' }}
+                    <NavIcon
+                      iconClass={`${item.icon} flaticon-white`}
+                      emoji={item.iconEmoji}
                     />
                   ) : (
                     item.iconEmoji
@@ -685,9 +719,9 @@ const Header = () => {
               style={{ marginLeft: 'auto' }}
             >
               <span className="nav-icon">
-                <i
-                  className="fi fi-rr-calendar flaticon-white"
-                  style={{ fontSize: '1.2rem' }}
+                <NavIcon
+                  iconClass="fi fi-rr-calendar flaticon-white"
+                  emoji="📅"
                 />
               </span>
               <span>ĐẶT LỊCH HẸN</span>
@@ -715,8 +749,9 @@ const Header = () => {
               >
                 <span style={{ marginRight: '8px' }}>
                   {item.icon?.startsWith('fi ') ? (
-                    <i
-                      className={`${item.icon} flaticon-teal`}
+                    <NavIcon
+                      iconClass={`${item.icon} flaticon-teal`}
+                      emoji={item.iconEmoji}
                       style={{ fontSize: '1rem' }}
                     />
                   ) : (

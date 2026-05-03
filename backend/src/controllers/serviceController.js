@@ -62,7 +62,20 @@ export const searchServices = async (req, res, next) => {
     const skip = (pageNum - 1) * pageSize;
 
     // Lấy dịch vụ theo filter cơ bản
+    // Nếu sortBy=newest → sort theo createdAt mới nhất
+    let sortOption = {};
+    if (sortBy === 'newest' || sortBy === '-createdAt') {
+      sortOption = { createdAt: -1 };
+    } else if (sortBy === 'rating' || sortBy === '-rating') {
+      sortOption = { rating: -1 };
+    } else if (sortBy === 'price_asc' || sortBy === 'price') {
+      sortOption = { price: 1 };
+    } else if (sortBy === 'price_desc') {
+      sortOption = { price: -1 };
+    }
+
     let services = await Service.find(query)
+      .sort(sortOption)
       .populate('provider', 'fullName email avatar')
       .lean();
 

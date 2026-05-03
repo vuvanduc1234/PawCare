@@ -25,11 +25,17 @@ const HomePage = () => {
     const fetchLatest = async () => {
       try {
         setServicesLoading(true);
-        const res = await (
-          serviceService.searchServices || serviceService.getServicesByCategory
-        )({ limit: 6, page: 1 });
-        setLatestServices(res?.data || []);
+        // Gọi API lấy danh sách dịch vụ y tế mới nhất (sortBy=newest, limit=6)
+        const res = await serviceService.searchServices({
+          limit: 6,
+          page: 1,
+          sortBy: 'newest',
+        });
+        // Backend trả về { success, data: [...], pagination }
+        const services = res?.data || [];
+        setLatestServices(services);
       } catch (e) {
+        console.error('Lỗi tải dịch vụ mới nhất:', e);
         setLatestServices([]);
       } finally {
         setServicesLoading(false);

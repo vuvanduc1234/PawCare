@@ -19,13 +19,30 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Vui lòng nhập mật khẩu'],
       minlength: 6,
       select: false, // Không trả về password mặc định
     },
     phone: {
       type: String,
-      required: [true, 'Vui lòng nhập số điện thoại'],
+      default: null,
+    },
+
+    // Google OAuth
+    googleId: {
+      type: String,
+      default: null,
+    },
+
+    // Reset mật khẩu
+    passwordResetToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      default: null,
+      select: false,
     },
 
     // Thông tin cá nhân
@@ -82,7 +99,7 @@ const userSchema = new mongoose.Schema(
  * Chỉ hash nếu password bị thay đổi
  */
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
+  if (!this.isModified('password') || !this.password) {
     return next();
   }
 
