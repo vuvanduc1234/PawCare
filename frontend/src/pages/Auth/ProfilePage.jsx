@@ -1,35 +1,32 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { userService } from '../../services/userService';
 import { Header } from '../../components/common';
 
-/**
- * ProfilePage: Trang profile của user
- * Hiển thị và cho phép chỉnh sửa thông tin cá nhân
- */
-const ProfilePage = () => {
-  const { user, updateUser } = useAuth();
-  const navigate = useNavigate();
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [formData, setFormData] = React.useState(user);
-  const [loading, setLoading] = React.useState(false);
-  const [message, setMessage] = React.useState('');
+const AVATAR_COLORS = [
+  '#e07055',
+  '#1d6e6e',
+  '#9b59b6',
+  '#e67e22',
+  '#27ae60',
+  '#2980b9',
+];
 
-  /**
-   * Xử lý thay đổi input
-   */
+const ProfilePage = () => {
+  const { user, updateUser, logout } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('profile');
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState(user || {});
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
-  /**
-   * Xử lý submit cập nhật profile
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -37,157 +34,724 @@ const ProfilePage = () => {
       const response = await userService.updateProfile(formData);
       if (response.success) {
         updateUser(response.data);
-        setMessage('Cập nhật profile thành công');
+        setMessage('success');
         setIsEditing(false);
         setTimeout(() => setMessage(''), 3000);
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Cập nhật thất bại');
+      setMessage('error');
+      setTimeout(() => setMessage(''), 3000);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) {
-    return <div>Chưa đăng nhập</div>;
-  }
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  if (!user)
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+            Bạn chưa đăng nhập
+          </p>
+          <Link
+            to="/login"
+            style={{
+              background: 'var(--coral)',
+              color: '#fff',
+              padding: '0.65rem 1.6rem',
+              borderRadius: '2rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+            }}
+          >
+            Đăng nhập
+          </Link>
+        </div>
+      </div>
+    );
+
+  const avatarInitial = (user.fullName || user.email || '?')
+    .charAt(0)
+    .toUpperCase();
+  const avatarColor =
+    AVATAR_COLORS[(avatarInitial.charCodeAt(0) || 0) % AVATAR_COLORS.length];
+
+  const ROLE_LABELS = {
+    admin: '🛡️ Quản trị viên',
+    provider: '🏢 Nhà cung cấp',
+    user: '👤 Người dùng',
+  };
+  const roleLabel = ROLE_LABELS[user.role] || user.role;
+
+  const navLinks = [
+    { id: 'profile', icon: '👤', label: 'Hồ sơ' },
+    { id: 'pets', icon: '🐾', label: 'Thú cưng', href: '/pets' },
+    { id: 'bookings', icon: '📅', label: 'Lịch hẹn', href: '/bookings' },
+    { id: 'settings', icon: '⚙️', label: 'Cài đặt' },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100vh', background: '#f8faf9' }}>
       <Header />
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-gray-500 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-200 transition"
-          >
-            ←
-          </button>
-          <h1 className="text-3xl font-bold">Hồ Sơ Cá Nhân</h1>
-        </div>
 
+      <style>{`
+        .profile-sidebar {
+          background: #fff;
+          border-radius: 20px;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+          overflow: hidden;
+        }
+        .profile-cover {
+          height: 80px;
+          background: linear-gradient(135deg, var(--teal) 0%, #4da898 100%);
+          position: relative;
+        }
+        .profile-avatar-wrap {
+          position: absolute;
+          bottom: -30px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+        .profile-avatar {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          border: 3px solid #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.6rem;
+          font-weight: 800;
+          color: #fff;
+          font-family: Quicksand, sans-serif;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .profile-nav-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 11px 20px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text-mid);
+          cursor: pointer;
+          transition: all 0.15s;
+          border-left: 3px solid transparent;
+          text-decoration: none;
+        }
+        .profile-nav-item:hover {
+          background: var(--teal-pale);
+          color: var(--teal);
+          border-left-color: var(--teal);
+        }
+        .profile-nav-item.active {
+          background: var(--teal-pale);
+          color: var(--teal);
+          border-left-color: var(--teal);
+        }
+        .profile-card {
+          background: #fff;
+          border-radius: 20px;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+          overflow: hidden;
+        }
+        .profile-field {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          padding: 16px 0;
+          border-bottom: 1px solid #f0f5f4;
+        }
+        .profile-field:last-child { border-bottom: none; }
+        .field-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: var(--teal-pale);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          flex-shrink: 0;
+        }
+        .stat-card {
+          background: #fff;
+          border-radius: 16px;
+          padding: 18px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .stat-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.4rem;
+          flex-shrink: 0;
+        }
+        .profile-input {
+          width: 100%;
+          border: 1.5px solid #d9eded;
+          border-radius: 10px;
+          padding: 10px 14px;
+          font-size: 0.88rem;
+          color: var(--text-mid);
+          outline: none;
+          transition: border-color 0.2s;
+          background: #f8faf9;
+          font-family: Nunito, sans-serif;
+        }
+        .profile-input:focus { border-color: var(--teal); background: #fff; }
+        .profile-label { font-size: 0.78rem; font-weight: 700; color: var(--text-light); letter-spacing: 0.05em; margin-bottom: 6px; text-transform: uppercase; }
+      `}</style>
+
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem' }}>
         {/* Message */}
         {message && (
           <div
-            className={`mb-4 p-4 rounded-lg ${
-              message.includes('thành công')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
+            style={{
+              padding: '12px 20px',
+              borderRadius: '12px',
+              marginBottom: '1rem',
+              background: message === 'success' ? '#e8f5e9' : '#fdecea',
+              color: message === 'success' ? '#2e7d32' : '#c62828',
+              fontWeight: 600,
+              fontSize: '0.88rem',
+            }}
           >
-            {message}
+            {message === 'success'
+              ? '✅ Cập nhật thông tin thành công!'
+              : '❌ Cập nhật thất bại, vui lòng thử lại.'}
           </div>
         )}
 
-        {/* Profile Card */}
-        <div className="card">
-          {!isEditing ? (
-            <div className="space-y-4">
-              <p>
-                <strong>Tên:</strong> {user.fullName}
-              </p>
-              <p>
-                <strong>Email:</strong> {user.email}
-              </p>
-              <p>
-                <strong>Số điện thoại:</strong> {user.phone}
-              </p>
-              <p>
-                <strong>Địa chỉ:</strong>{' '}
-                {user.address?.street || 'Chưa cập nhật'}
-              </p>
-              <p>
-                <strong>Vai trò:</strong> {user.role}
-              </p>
-
-              <button
-                onClick={() => setIsEditing(true)}
-                className="btn-primary"
-              >
-                Chỉnh Sửa
-              </button>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '220px 1fr',
+            gap: '1.5rem',
+            alignItems: 'start',
+          }}
+          className="sm:block"
+        >
+          {/* Sidebar */}
+          <div className="profile-sidebar">
+            <div className="profile-cover">
+              <div className="profile-avatar-wrap">
+                <div
+                  className="profile-avatar"
+                  style={{ background: avatarColor }}
+                >
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt=""
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '50%',
+                      }}
+                    />
+                  ) : (
+                    avatarInitial
+                  )}
+                </div>
+              </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Full Name */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Tên</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="input-field"
-                />
+            <div
+              style={{
+                paddingTop: '40px',
+                paddingBottom: '16px',
+                textAlign: 'center',
+                borderBottom: '1px solid #f0f5f4',
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: 'Quicksand, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  color: 'var(--teal-dark)',
+                  marginBottom: '4px',
+                }}
+              >
+                {user.fullName || 'Chưa đặt tên'}
+              </p>
+              <span
+                style={{
+                  display: 'inline-block',
+                  background: 'var(--teal-pale)',
+                  color: 'var(--teal)',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  padding: '3px 10px',
+                  borderRadius: '20px',
+                }}
+              >
+                {roleLabel}
+              </span>
+            </div>
+            <nav style={{ padding: '10px 0' }}>
+              {navLinks.map((item) =>
+                item.href ? (
+                  <Link
+                    key={item.id}
+                    to={item.href}
+                    className="profile-nav-item"
+                  >
+                    <span>{item.icon}</span> {item.label}
+                  </Link>
+                ) : (
+                  <div
+                    key={item.id}
+                    className={`profile-nav-item${activeTab === item.id ? ' active' : ''}`}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <span>{item.icon}</span> {item.label}
+                  </div>
+                )
+              )}
+              <div
+                style={{
+                  margin: '10px 16px 0',
+                  height: '1px',
+                  background: '#f0f5f4',
+                }}
+              />
+              <div
+                className="profile-nav-item"
+                onClick={handleLogout}
+                style={{ color: '#c62828', marginTop: 4 }}
+              >
+                <span>🚪</span> Đăng xuất
               </div>
+            </nav>
+          </div>
 
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Số điện thoại
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="input-field"
-                />
-              </div>
+          {/* Main content */}
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
+          >
+            {/* Stats row */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '1rem',
+              }}
+            >
+              {[
+                {
+                  icon: '🐾',
+                  label: 'Thú cưng',
+                  value: '—',
+                  bg: '#e8f5f2',
+                  color: '#1d6e6e',
+                },
+                {
+                  icon: '📅',
+                  label: 'Lịch đặt',
+                  value: '—',
+                  bg: '#fde8e0',
+                  color: '#e07055',
+                },
+                {
+                  icon: '⭐',
+                  label: 'Đánh giá',
+                  value: '—',
+                  bg: '#fff3e0',
+                  color: '#e6a020',
+                },
+              ].map((s, i) => (
+                <div key={i} className="stat-card">
+                  <div className="stat-icon" style={{ background: s.bg }}>
+                    {s.icon}
+                  </div>
+                  <div>
+                    <p
+                      style={{
+                        fontFamily: 'Quicksand, sans-serif',
+                        fontSize: '1.3rem',
+                        fontWeight: 800,
+                        color: s.color,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {s.value}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-light)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {s.label}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-              {/* Address */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Địa chỉ
-                </label>
-                <input
-                  type="text"
-                  name="street"
-                  value={formData.address?.street || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      address: {
-                        ...formData.address,
-                        street: e.target.value,
+            {/* Profile card */}
+            {activeTab === 'profile' && (
+              <div className="profile-card">
+                <div
+                  style={{
+                    padding: '20px 24px',
+                    borderBottom: '1px solid #f0f5f4',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <h2
+                      style={{
+                        fontFamily: 'Quicksand, sans-serif',
+                        fontWeight: 800,
+                        fontSize: '1.1rem',
+                        color: 'var(--teal-dark)',
+                      }}
+                    >
+                      Thông tin cá nhân
+                    </h2>
+                    <p
+                      style={{
+                        fontSize: '0.78rem',
+                        color: 'var(--text-light)',
+                        marginTop: '2px',
+                      }}
+                    >
+                      Cập nhật thông tin hồ sơ của bạn
+                    </p>
+                  </div>
+                  {!isEditing && (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      style={{
+                        background: 'var(--teal)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '8px 16px',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      ✏️ Chỉnh sửa
+                    </button>
+                  )}
+                </div>
+
+                {!isEditing ? (
+                  <div style={{ padding: '8px 24px 16px' }}>
+                    {[
+                      {
+                        icon: '👤',
+                        label: 'Họ và tên',
+                        value: user.fullName || 'Chưa cập nhật',
                       },
-                    })
-                  }
-                  className="input-field"
-                />
+                      { icon: '📧', label: 'Email', value: user.email },
+                      {
+                        icon: '📱',
+                        label: 'Số điện thoại',
+                        value: user.phone || 'Chưa cập nhật',
+                      },
+                      {
+                        icon: '📍',
+                        label: 'Địa chỉ',
+                        value: user.address?.street || 'Chưa cập nhật',
+                      },
+                      { icon: '🏷️', label: 'Vai trò', value: roleLabel },
+                    ].map((f, i) => (
+                      <div key={i} className="profile-field">
+                        <div className="field-icon">{f.icon}</div>
+                        <div>
+                          <p
+                            style={{
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              color: 'var(--text-light)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              marginBottom: '3px',
+                            }}
+                          >
+                            {f.label}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: '0.9rem',
+                              color: 'var(--teal-dark)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {f.value}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {user.bio && (
+                      <div className="profile-field">
+                        <div className="field-icon">📝</div>
+                        <div>
+                          <p
+                            style={{
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              color: 'var(--text-light)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              marginBottom: '3px',
+                            }}
+                          >
+                            Giới thiệu
+                          </p>
+                          <p
+                            style={{
+                              fontSize: '0.9rem',
+                              color: 'var(--teal-dark)',
+                            }}
+                          >
+                            {user.bio}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={handleSubmit}
+                    style={{ padding: '20px 24px' }}
+                  >
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '16px',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div>
+                        <p className="profile-label">Họ và tên</p>
+                        <input
+                          className="profile-input"
+                          type="text"
+                          name="fullName"
+                          value={formData.fullName || ''}
+                          onChange={handleChange}
+                          placeholder="Tên đầy đủ"
+                        />
+                      </div>
+                      <div>
+                        <p className="profile-label">Số điện thoại</p>
+                        <input
+                          className="profile-input"
+                          type="tel"
+                          name="phone"
+                          value={formData.phone || ''}
+                          onChange={handleChange}
+                          placeholder="0xxx xxx xxx"
+                        />
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: '16px' }}>
+                      <p className="profile-label">Địa chỉ</p>
+                      <input
+                        className="profile-input"
+                        type="text"
+                        name="street"
+                        value={formData.address?.street || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            address: {
+                              ...formData.address,
+                              street: e.target.value,
+                            },
+                          })
+                        }
+                        placeholder="Địa chỉ của bạn"
+                      />
+                    </div>
+                    <div style={{ marginBottom: '20px' }}>
+                      <p className="profile-label">Giới thiệu bản thân</p>
+                      <textarea
+                        className="profile-input"
+                        name="bio"
+                        value={formData.bio || ''}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder="Một vài dòng về bạn..."
+                        style={{ resize: 'vertical' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                          flex: 1,
+                          background: 'var(--teal)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '12px',
+                          padding: '12px',
+                          fontWeight: 700,
+                          fontSize: '0.88rem',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {loading ? 'Đang lưu...' : '💾 Lưu thay đổi'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setFormData(user);
+                        }}
+                        style={{
+                          flex: 1,
+                          background: '#f0f5f4',
+                          color: 'var(--text-mid)',
+                          border: 'none',
+                          borderRadius: '12px',
+                          padding: '12px',
+                          fontWeight: 700,
+                          fontSize: '0.88rem',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
+            )}
 
-              {/* Bio */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Bio</label>
-                <textarea
-                  name="bio"
-                  value={formData.bio || ''}
-                  onChange={handleChange}
-                  className="input-field"
-                  rows="3"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary flex-1"
+            {/* Settings tab */}
+            {activeTab === 'settings' && (
+              <div className="profile-card">
+                <div
+                  style={{
+                    padding: '20px 24px',
+                    borderBottom: '1px solid #f0f5f4',
+                  }}
                 >
-                  {loading ? 'Đang lưu...' : 'Lưu'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="btn-secondary flex-1"
+                  <h2
+                    style={{
+                      fontFamily: 'Quicksand, sans-serif',
+                      fontWeight: 800,
+                      fontSize: '1.1rem',
+                      color: 'var(--teal-dark)',
+                    }}
+                  >
+                    Cài đặt tài khoản
+                  </h2>
+                </div>
+                <div
+                  style={{
+                    padding: '20px 24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                  }}
                 >
-                  Hủy
-                </button>
+                  <Link
+                    to="/forgot-password"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '14px',
+                      padding: '16px',
+                      background: '#f8faf9',
+                      borderRadius: '12px',
+                      textDecoration: 'none',
+                      color: 'var(--text-mid)',
+                      fontWeight: 600,
+                      fontSize: '0.88rem',
+                      border: '1.5px solid #f0f5f4',
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>🔐</span>
+                    <div>
+                      <p style={{ color: 'var(--teal-dark)', fontWeight: 700 }}>
+                        Đổi mật khẩu
+                      </p>
+                      <p
+                        style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--text-light)',
+                          marginTop: '2px',
+                        }}
+                      >
+                        Cập nhật mật khẩu tài khoản của bạn
+                      </p>
+                    </div>
+                    <span style={{ marginLeft: 'auto' }}>→</span>
+                  </Link>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '14px',
+                      padding: '16px',
+                      background: '#fdecea',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      border: '1.5px solid #fad0cc',
+                    }}
+                    onClick={handleLogout}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>🚪</span>
+                    <div>
+                      <p
+                        style={{
+                          color: '#c62828',
+                          fontWeight: 700,
+                          fontSize: '0.88rem',
+                        }}
+                      >
+                        Đăng xuất
+                      </p>
+                      <p
+                        style={{
+                          fontSize: '0.75rem',
+                          color: '#e57373',
+                          marginTop: '2px',
+                        }}
+                      >
+                        Thoát khỏi tài khoản của bạn
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </form>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

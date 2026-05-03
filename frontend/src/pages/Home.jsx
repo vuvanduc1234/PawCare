@@ -1,13 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
 import Footer from '../components/common/Footer';
 import f3 from '../images/f3.png';
+import serviceServiceModule from '../services/serviceService';
 
-/**
- * HomePage: PawCare — tông màu teal & peach
- */
+const serviceService = serviceServiceModule.default || serviceServiceModule;
+
+const CATEGORY_ICONS = {
+  spa: '🛁',
+  clinic: '🏥',
+  hotel: '🏨',
+  grooming: '✂️',
+  vet: '🩺',
+  training: '🎯',
+  default: '🐾',
+};
+
 const HomePage = () => {
+  const [latestServices, setLatestServices] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        setServicesLoading(true);
+        const res = await (
+          serviceService.searchServices || serviceService.getServicesByCategory
+        )({ limit: 6, page: 1 });
+        setLatestServices(res?.data || []);
+      } catch (e) {
+        setLatestServices([]);
+      } finally {
+        setServicesLoading(false);
+      }
+    };
+    fetchLatest();
+  }, []);
+
   const stats = [
     { num: '2,400+', label: 'Khách hài lòng', icon: '😊' },
     { num: '24/7', label: 'Pet care online', icon: '🕐' },
@@ -69,7 +99,7 @@ const HomePage = () => {
     },
   ];
 
-  const products = [
+  const fallbackProducts = [
     { icon: '🧳', label: 'Pet carrier' },
     { icon: '🥣', label: 'Pet bowl' },
     { icon: '🍜', label: 'Designer bowl' },
@@ -78,18 +108,20 @@ const HomePage = () => {
     { icon: '🟣', label: 'Pet accessory' },
   ];
 
+  const formatPrice = (price) => {
+    if (!price && price !== 0) return '';
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(price);
+  };
+
   return (
     <div style={{ background: 'var(--cream)', minHeight: '100vh' }}>
       <Header />
 
-      {/* ─── HERO ─────────────────────────────────────────── */}
-      <section
-        style={{
-          background: '#FDF3EF',
-          position: 'relative',
-        }}
-      >
-        {/* Decorative paw prints */}
+      {/* HERO */}
+      <section style={{ background: '#FDF3EF', position: 'relative' }}>
         <div
           style={{
             position: 'absolute',
@@ -114,10 +146,8 @@ const HomePage = () => {
         >
           🐾
         </div>
-
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 min-h-[75vh] items-center gap-8 py-12">
-            {/* Left: Content */}
             <div className="flex flex-col justify-center">
               <div
                 style={{
@@ -137,7 +167,6 @@ const HomePage = () => {
               >
                 🐾 Dịch vụ thú cưng chuyên nghiệp
               </div>
-
               <h1
                 style={{
                   fontFamily: 'Quicksand, sans-serif',
@@ -174,7 +203,6 @@ const HomePage = () => {
               >
                 Thú Cưng Của Bạn
               </h2>
-
               <p
                 style={{
                   color: 'var(--text-mid)',
@@ -187,7 +215,6 @@ const HomePage = () => {
                 Dịch vụ y tế chuyên sâu, sản phẩm cao cấp và tình yêu thương
                 trọn vẹn dành cho người bạn lông xù của bạn.
               </p>
-
               <div className="flex flex-wrap gap-3 mb-8">
                 <Link
                   to="/bookings"
@@ -218,8 +245,6 @@ const HomePage = () => {
                   Khám phá dịch vụ
                 </Link>
               </div>
-
-              {/* Quick category pills */}
               <div className="flex flex-wrap gap-2">
                 {categories.map((c) => (
                   <Link
@@ -241,8 +266,6 @@ const HomePage = () => {
                 ))}
               </div>
             </div>
-
-            {/* Right: Image */}
             <div
               style={{
                 position: 'relative',
@@ -276,8 +299,6 @@ const HomePage = () => {
                   marginBottom: '-10px',
                 }}
               />
-
-              {/* Floating badges */}
               <div
                 style={{
                   position: 'absolute',
@@ -310,7 +331,6 @@ const HomePage = () => {
                   Mở cửa 09:00 – 21:00 hàng ngày
                 </p>
               </div>
-
               <div
                 style={{
                   position: 'absolute',
@@ -333,7 +353,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ─── STATS BAR ───────────────────────────────────── */}
+      {/* STATS BAR */}
       <div style={{ background: 'var(--teal)' }}>
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4">
           {stats.map((s, i) => (
@@ -388,7 +408,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* ─── SẢN PHẨM MỚI NHẤT ─────────────────────────── */}
+      {/* SẢN PHẨM / DỊCH VỤ MỚI NHẤT */}
       <section style={{ background: '#fff', padding: '4rem 0' }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-10">
@@ -409,56 +429,193 @@ const HomePage = () => {
                 fontSize: '2rem',
               }}
             >
-              SẢN PHẨM MỚI NHẤT
+              DỊCH VỤ MỚI NHẤT
             </h2>
+            <p
+              style={{
+                color: 'var(--text-light)',
+                fontSize: '0.88rem',
+                marginTop: '0.5rem',
+              }}
+            >
+              Khám phá các dịch vụ y tế & chăm sóc thú cưng mới nhất
+            </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {products.map((p, i) => (
-              <Link
-                to="/shop"
-                key={i}
-                style={{
-                  background: 'var(--teal-pale)',
-                  borderRadius: '1.2rem',
-                  textAlign: 'center',
-                  padding: '1.6rem 1rem',
-                  transition: 'all .2s',
-                }}
-                className="block hover:-translate-y-1 hover:shadow-md group"
-              >
+
+          {servicesLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[...Array(6)].map((_, i) => (
                 <div
+                  key={i}
                   style={{
-                    width: '70px',
-                    height: '70px',
-                    background: '#fff',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 1rem',
-                    fontSize: '2.6rem',
-                    boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                    background: 'var(--teal-pale)',
+                    borderRadius: '1.2rem',
+                    padding: '1.6rem 1rem',
+                    textAlign: 'center',
                   }}
-                  className="group-hover:scale-110 transition-transform"
                 >
-                  {p.icon}
+                  <div
+                    style={{
+                      width: '70px',
+                      height: '70px',
+                      background: '#e0e0e0',
+                      borderRadius: '50%',
+                      margin: '0 auto 1rem',
+                      animation: 'pulse 1.5s infinite',
+                    }}
+                  />
+                  <div
+                    style={{
+                      height: '14px',
+                      background: '#e0e0e0',
+                      borderRadius: '4px',
+                      width: '80%',
+                      margin: '0 auto',
+                    }}
+                  />
                 </div>
-                <p
+              ))}
+            </div>
+          ) : latestServices.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {latestServices.map((svc, i) => (
+                <Link
+                  to={`/services/${svc._id}`}
+                  key={svc._id || i}
                   style={{
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    color: 'var(--teal-dark)',
+                    background: 'var(--teal-pale)',
+                    borderRadius: '1.2rem',
+                    textAlign: 'center',
+                    padding: '1.6rem 1rem',
+                    transition: 'all .2s',
+                    display: 'block',
+                    textDecoration: 'none',
                   }}
+                  className="hover:-translate-y-1 hover:shadow-md group"
                 >
-                  {p.label}
-                </p>
-              </Link>
-            ))}
+                  <div
+                    style={{
+                      width: '70px',
+                      height: '70px',
+                      background: '#fff',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 1rem',
+                      fontSize: svc.images?.[0] ? '0' : '2.6rem',
+                      boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                      overflow: 'hidden',
+                    }}
+                    className="group-hover:scale-110 transition-transform"
+                  >
+                    {svc.images?.[0] ? (
+                      <img
+                        src={svc.images[0]?.url || svc.images[0]}
+                        alt={svc.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    ) : (
+                      <span>
+                        {CATEGORY_ICONS[svc.category] || CATEGORY_ICONS.default}
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      color: 'var(--teal-dark)',
+                      marginBottom: '0.25rem',
+                      lineHeight: 1.3,
+                    }}
+                    className="line-clamp-2"
+                  >
+                    {svc.name}
+                  </p>
+                  {svc.price && (
+                    <p
+                      style={{
+                        fontSize: '0.7rem',
+                        color: 'var(--coral)',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {formatPrice(svc.price)}
+                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {fallbackProducts.map((p, i) => (
+                <Link
+                  to="/services"
+                  key={i}
+                  style={{
+                    background: 'var(--teal-pale)',
+                    borderRadius: '1.2rem',
+                    textAlign: 'center',
+                    padding: '1.6rem 1rem',
+                    transition: 'all .2s',
+                    display: 'block',
+                  }}
+                  className="hover:-translate-y-1 hover:shadow-md group"
+                >
+                  <div
+                    style={{
+                      width: '70px',
+                      height: '70px',
+                      background: '#fff',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 1rem',
+                      fontSize: '2.6rem',
+                      boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                    }}
+                    className="group-hover:scale-110 transition-transform"
+                  >
+                    {p.icon}
+                  </div>
+                  <p
+                    style={{
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      color: 'var(--teal-dark)',
+                    }}
+                  >
+                    {p.label}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-8">
+            <Link
+              to="/services"
+              style={{
+                color: 'var(--teal)',
+                fontSize: '0.88rem',
+                fontWeight: 700,
+                borderBottom: '2px solid var(--teal)',
+                paddingBottom: '2px',
+              }}
+            >
+              Xem tất cả dịch vụ →
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ─── SERVICES ────────────────────────────────────── */}
+      {/* SERVICES CARDS */}
       <section style={{ background: 'var(--cream)', padding: '5rem 0' }}>
         <div className="max-w-7xl mx-auto px-6">
           <div
@@ -506,7 +663,6 @@ const HomePage = () => {
               Xem tất cả →
             </Link>
           </div>
-
           <div className="grid md:grid-cols-3 gap-5">
             {services.map((s, idx) => (
               <Link
@@ -538,7 +694,6 @@ const HomePage = () => {
                 >
                   {s.icon}
                 </div>
-
                 <p
                   style={{
                     fontFamily: 'Quicksand, sans-serif',
@@ -559,7 +714,6 @@ const HomePage = () => {
                 >
                   {s.desc}
                 </p>
-
                 <div
                   style={{
                     display: 'inline-block',
@@ -579,7 +733,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ─── CTA STRIP ───────────────────────────────────── */}
+      {/* CTA */}
       <div
         style={{
           background:

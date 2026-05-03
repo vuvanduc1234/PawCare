@@ -3,7 +3,6 @@ import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { PrivateRoute } from './components/common';
 
-// Import pages
 import HomePage from './pages/Home';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -11,72 +10,66 @@ import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import ProfilePage from './pages/Auth/ProfilePage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
+import GoogleCallbackPage from './pages/Auth/GoogleCallbackPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 
-// Community pages
+// Community
 import FeedPage from './pages/Community/FeedPage';
 
-// Vaccine pages
+// Vaccine
 import VaccineListPage from './pages/Vaccine/VaccineListPage';
 
-// Service pages
+// Service
 import ServiceSearchPage from './pages/Service/ServiceSearchPage';
 import ServiceDetailPage from './pages/Service/ServiceDetailPage';
 
-// Pet pages
+// Pet
 import PetListPage from './pages/Pet/PetListPage';
 
-// Booking pages
+// Booking
 import MyBookingsPage from './pages/Booking/MyBookingsPage';
 
-// Provider pages
+// Provider
 import ProviderDashboardPage from './pages/Provider/ProviderDashboardPage';
 import AddServicePage from './pages/Provider/AddServicePage';
 
-// Admin pages
+// Admin
 import AdminDashboardPage from './pages/Admin/AdminDashboardPage';
 import AdminUsersPage from './pages/Admin/AdminUsersPage';
 import AdminProvidersPage from './pages/Admin/AdminProvidersPage';
 import AdminPostsPage from './pages/Admin/AdminPostsPage';
 import AdminReportsPage from './pages/Admin/AdminReportsPage';
 
-/**
- * RoleBasedRedirect: Redirect trang chủ theo role sau khi đăng nhập
- * - admin    → /admin
- * - provider → /provider/dashboard
- * - user     → /  (HomePage)
- */
 const RoleBasedRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
-
   if (loading) return null;
-
   if (isAuthenticated) {
     if (user?.role === 'admin') return <Navigate to="/admin" replace />;
     if (user?.role === 'provider')
       return <Navigate to="/provider/dashboard" replace />;
   }
-
   return <HomePage />;
 };
 
-/**
- * App Component: Cấu hình routing chính
- */
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Trang chủ - redirect theo role nếu đã đăng nhập */}
           <Route path="/" element={<RoleBasedRedirect />} />
 
           {/* Auth routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="/auth/google/callback"
+            element={<GoogleCallbackPage />}
+          />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-          {/* Protected routes - Any authenticated user */}
+          {/* Protected - any auth user */}
           <Route
             path="/profile"
             element={
@@ -86,11 +79,11 @@ function App() {
             }
           />
 
-          {/* Service routes - Public */}
+          {/* Service - public */}
           <Route path="/services" element={<ServiceSearchPage />} />
           <Route path="/services/:id" element={<ServiceDetailPage />} />
 
-          {/* Community routes */}
+          {/* Community */}
           <Route
             path="/community"
             element={
@@ -100,7 +93,7 @@ function App() {
             }
           />
 
-          {/* Vaccine routes - Protected */}
+          {/* Vaccine */}
           <Route
             path="/pets/:petId/vaccines"
             element={
@@ -110,7 +103,7 @@ function App() {
             }
           />
 
-          {/* Pet routes - Protected */}
+          {/* Pet */}
           <Route
             path="/pets"
             element={
@@ -120,7 +113,7 @@ function App() {
             }
           />
 
-          {/* Booking routes - Protected */}
+          {/* Booking */}
           <Route
             path="/bookings"
             element={
@@ -130,7 +123,7 @@ function App() {
             }
           />
 
-          {/* Provider Dashboard - Protected */}
+          {/* Provider */}
           <Route
             path="/provider/dashboard"
             element={
@@ -139,8 +132,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Add Service - Protected */}
           <Route
             path="/provider/services/new"
             element={
@@ -150,7 +141,7 @@ function App() {
             }
           />
 
-          {/* Admin routes */}
+          {/* Admin */}
           <Route
             path="/admin"
             element={
@@ -192,7 +183,6 @@ function App() {
             }
           />
 
-          {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
