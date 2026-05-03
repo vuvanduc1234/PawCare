@@ -7,6 +7,28 @@ import serviceServiceModule from '../services/serviceService';
 
 const serviceService = serviceServiceModule.default || serviceServiceModule;
 
+// Component hiển thị Flaticon, fallback sang emoji nếu CDN chưa load
+const FiIcon = ({ iconClass, emoji, size = '1.6rem', color = 'inherit' }) => {
+  const [ok, setOk] = React.useState(null);
+  React.useEffect(() => {
+    const el = document.createElement('i');
+    el.className = 'fi fi-rr-home';
+    el.style.cssText =
+      'position:absolute;visibility:hidden;font-size:20px;left:-9999px';
+    document.body.appendChild(el);
+    const check = () => {
+      setOk(el.offsetWidth > 0);
+      document.body.removeChild(el);
+    };
+    document.fonts?.ready
+      ? document.fonts.ready.then(check)
+      : setTimeout(check, 800);
+  }, []);
+  if (ok === false)
+    return <span style={{ fontSize: size, lineHeight: 1 }}>{emoji}</span>;
+  return <i className={iconClass} style={{ fontSize: size, color }} />;
+};
+
 const CATEGORY_ICONS = {
   spa: '🛁',
   clinic: '🏥',
@@ -45,15 +67,36 @@ const HomePage = () => {
   }, []);
 
   const stats = [
-    { num: '2,400+', label: 'Khách hài lòng', icon: '😊' },
-    { num: '24/7', label: 'Pet care online', icon: '🕐' },
-    { num: '4.9★', label: 'Đánh giá trung bình', icon: '⭐' },
-    { num: '1 phút', label: 'Đặt lịch nhanh', icon: '⚡' },
+    {
+      num: '2,400+',
+      label: 'Khách hài lòng',
+      fi: 'fi fi-rr-smile',
+      emoji: '😊',
+    },
+    {
+      num: '24/7',
+      label: 'Pet care online',
+      fi: 'fi fi-rr-clock',
+      emoji: '🕐',
+    },
+    {
+      num: '4.9★',
+      label: 'Đánh giá trung bình',
+      fi: 'fi fi-rr-star',
+      emoji: '⭐',
+    },
+    {
+      num: '1 phút',
+      label: 'Đặt lịch nhanh',
+      fi: 'fi fi-rr-bolt',
+      emoji: '⚡',
+    },
   ];
 
   const services = [
     {
-      icon: '🩺',
+      fi: 'fi fi-rr-stethoscope',
+      emoji: '🩺',
       title: 'Tìm dịch vụ',
       desc: 'Khám phá spa, grooming, khám bệnh và dịch vụ tại nhà cho bé yêu của bạn.',
       path: '/services',
@@ -61,7 +104,8 @@ const HomePage = () => {
       accent: 'var(--teal)',
     },
     {
-      icon: '📅',
+      fi: 'fi fi-rr-calendar',
+      emoji: '📅',
       title: 'Đặt lịch nhanh',
       desc: 'Chọn thời gian, thanh toán an toàn, nhận nhắc lịch tự động ngay lập tức.',
       path: '/bookings',
@@ -69,7 +113,8 @@ const HomePage = () => {
       accent: 'var(--coral)',
     },
     {
-      icon: '⭐',
+      fi: 'fi fi-rr-star',
+      emoji: '⭐',
       title: 'Đánh giá thật',
       desc: 'Đọc review, xem ảnh thật từ khách hàng và chọn nơi phù hợp nhất cho bé.',
       path: '/services',
@@ -80,25 +125,29 @@ const HomePage = () => {
 
   const categories = [
     {
-      icon: '🛁',
+      fi: 'fi fi-rr-bath',
+      emoji: '🛁',
       label: 'Spa & Grooming',
       path: '/services?category=spa',
       color: '#e8f4f4',
     },
     {
-      icon: '🏥',
+      fi: 'fi fi-rr-hospital',
+      emoji: '🏥',
       label: 'Phòng khám',
       path: '/services?category=clinic',
       color: '#fde8e0',
     },
     {
-      icon: '🏨',
+      fi: 'fi fi-rr-home',
+      emoji: '🏨',
       label: 'Pet Hotel',
       path: '/services?category=hotel',
       color: '#f0f0ff',
     },
     {
-      icon: '✂️',
+      fi: 'fi fi-rr-scissors',
+      emoji: '✂️',
       label: 'Cắt tỉa lông',
       path: '/services?category=grooming',
       color: '#fff3e0',
@@ -106,12 +155,12 @@ const HomePage = () => {
   ];
 
   const fallbackProducts = [
-    { icon: '🧳', label: 'Pet carrier' },
-    { icon: '🥣', label: 'Pet bowl' },
-    { icon: '🍜', label: 'Designer bowl' },
-    { icon: '🍪', label: 'Healthy treat' },
-    { icon: '🧸', label: 'Smart toy' },
-    { icon: '🟣', label: 'Pet accessory' },
+    { fi: 'fi fi-rr-suitcase', emoji: '🧳', label: 'Pet carrier' },
+    { fi: 'fi fi-rr-bowl-chopsticks', emoji: '🥣', label: 'Pet bowl' },
+    { fi: 'fi fi-rr-utensils', emoji: '🍜', label: 'Designer bowl' },
+    { fi: 'fi fi-rr-cookie', emoji: '🍪', label: 'Healthy treat' },
+    { fi: 'fi fi-rr-ball', emoji: '🧸', label: 'Smart toy' },
+    { fi: 'fi fi-rr-paw', emoji: '🐾', label: 'Pet accessory' },
   ];
 
   const formatPrice = (price) => {
@@ -266,7 +315,12 @@ const HomePage = () => {
                     }}
                     className="flex items-center gap-1.5 px-4 py-2 hover:border-teal-400 transition-all"
                   >
-                    <span style={{ fontSize: '1.1rem' }}>{c.icon}</span>
+                    <FiIcon
+                      iconClass={`${c.fi} `}
+                      emoji={c.emoji}
+                      size="1.1rem"
+                      color="var(--teal-dark)"
+                    />
                     <span>{c.label}</span>
                   </Link>
                 ))}
@@ -385,7 +439,12 @@ const HomePage = () => {
                   boxShadow: '0 4px 15px rgba(0,0,0,0.12)',
                 }}
               >
-                {s.icon}
+                <FiIcon
+                  iconClass={`${s.fi} `}
+                  emoji={s.emoji}
+                  size="1.5rem"
+                  color="#fff"
+                />
               </div>
               <p
                 style={{
@@ -588,7 +647,16 @@ const HomePage = () => {
                     }}
                     className="group-hover:scale-110 transition-transform"
                   >
-                    {p.icon}
+                    {p.fi ? (
+                      <FiIcon
+                        iconClass={`${p.fi} `}
+                        emoji={p.emoji}
+                        size="2rem"
+                        color="var(--teal)"
+                      />
+                    ) : (
+                      p.emoji
+                    )}
                   </div>
                   <p
                     style={{
@@ -698,7 +766,12 @@ const HomePage = () => {
                     border: '5px solid rgba(255,255,255,0.95)',
                   }}
                 >
-                  {s.icon}
+                  <FiIcon
+                    iconClass={`${s.fi} `}
+                    emoji={s.emoji}
+                    size="2rem"
+                    color={s.accent}
+                  />
                 </div>
                 <p
                   style={{
