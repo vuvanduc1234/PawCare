@@ -22,6 +22,7 @@ export const authenticate = (req, res, next) => {
     // Lưu thông tin user vào request
     req.user = {
       ...decoded,
+      _id: decoded.userId,
       id: decoded.userId,
     };
     next();
