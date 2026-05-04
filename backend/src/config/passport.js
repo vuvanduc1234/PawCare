@@ -18,8 +18,9 @@ export const initGoogleStrategy = () => {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   if (!clientID || !clientSecret) {
-    console.warn('⚠️  GOOGLE_CLIENT_ID hoặc GOOGLE_CLIENT_SECRET chưa được cấu hình. Google OAuth sẽ không hoạt động.');
-    return;
+    console.warn('⚠️  GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET não foi configurado. Google OAuth está desabilitado.');
+    strategyRegistered = true; // Marca como registrado mesmo que falhe, para evitar múltiplas warnings
+    return false; // Retorna false para indicar que não foi inicializado com sucesso
   }
 
   passport.use(
@@ -32,13 +33,13 @@ export const initGoogleStrategy = () => {
       async (accessToken, refreshToken, profile, done) => {
         try {
           const email = profile.emails?.[0]?.value;
-          if (!email) return done(null, false, { message: 'Không lấy được email từ Google' });
+          if (!email) return done(null, false, { message: 'Não foi possível obter o email do Google' });
 
-          // Tìm user đã có googleId
+          // Encontrar usuário com googleId
           let user = await User.findOne({ googleId: profile.id });
           if (user) return done(null, user);
 
-          // Tìm user theo email
+          // Encontrar usuário por email
           user = await User.findOne({ email });
           if (user) {
             user.googleId = profile.id;
@@ -49,7 +50,7 @@ export const initGoogleStrategy = () => {
             return done(null, user);
           }
 
-          // Tạo tài khoản mới từ Google
+          // Criar nova conta a partir do Google
           user = new User({
             fullName: profile.displayName || email.split('@')[0],
             email,
@@ -68,7 +69,8 @@ export const initGoogleStrategy = () => {
   );
 
   strategyRegistered = true;
-  console.log('✅ Google OAuth strategy đã được khởi tạo');
+  console.log('✅ Estratégia Google OAuth foi inicializada com sucesso');
+  return true;
 };
 
 export default passport;

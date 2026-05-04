@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import serviceService from '../../services/serviceService';
 import bookingService from '../../services/bookingService';
 import petService from '../../services/petService'; // ← Import đúng cách
+import ServiceRating from '../../components/Service/ServiceRating';
 import { useAuth } from '../../hooks/useAuth';
 import { Header } from '../../components/common';
 
@@ -502,6 +503,15 @@ const ServiceDetailPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Rating Section */}
+        {service && (
+          <ServiceRating
+            serviceId={service._id}
+            initialRating={service.rating || 0}
+            initialReviews={service.reviews || []}
+          />
+        )}
       </div>
     </div>
   );

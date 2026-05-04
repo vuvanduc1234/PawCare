@@ -46,10 +46,18 @@ router.post('/reset-password', resetPassword);
 
 /**
  * GET /api/auth/google
- * Lazy-init strategy để đảm bảo env đã được load
+ * Lazy-init strategy para garantir que env foi carregado
  */
 router.get('/google', (req, res, next) => {
-  initGoogleStrategy();
+  const googleInitialized = initGoogleStrategy();
+  
+  if (!googleInitialized) {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return res.redirect(
+      `${frontendUrl}/login?error=google_not_configured&message=Google+OAuth+não+foi+configurado.+Por+favor,+entre+em+contato+com+o+administrador.`
+    );
+  }
+  
   passport.authenticate('google', {
     scope: ['profile', 'email'],
     session: false,
@@ -60,7 +68,15 @@ router.get('/google', (req, res, next) => {
  * GET /api/auth/google/callback
  */
 router.get('/google/callback', (req, res, next) => {
-  initGoogleStrategy();
+  const googleInitialized = initGoogleStrategy();
+  
+  if (!googleInitialized) {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return res.redirect(
+      `${frontendUrl}/login?error=google_not_configured&message=Google+OAuth+não+foi+configurado.`
+    );
+  }
+  
   passport.authenticate('google', {
     session: false,
     failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=google_failed`,

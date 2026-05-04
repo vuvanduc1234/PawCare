@@ -13,6 +13,7 @@ import {
   isRateLimited,
   sanitizeUser,
 } from '../utils/authUtils.js';
+import nodemailer from 'nodemailer';
 
 /**
  * Đăng ký tài khoản mới - CÓ VALIDATION VÀ SECURITY
@@ -61,11 +62,71 @@ export const registerImproved = async (req, res, next) => {
 
     await newUser.save();
 
-    // 5. Tạo tokens
+    // 6. Gửi email xác minh
+    try {
+      const verificationToken = newUser._id.toString(); // Sử dụng user ID làm token
+      const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}&email=${encodeURIComponent(newUser.email)}`;
+
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: `"PawCare" <${process.env.SMTP_USER}>`,
+        to: newUser.email,
+        subject: '🐾 Xác minh email PawCare - Đăng ký thành công',
+        html: `
+          <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #f5f5f5; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 32px;">
+              <h1 style="color: #1a7a6e; margin: 0; font-size: 28px;">🐾 PawCare</h1>
+              <p style="color: #888; margin: 8px 0 0 0; font-size: 14px;">Chăm sóc thú cưng toàn diện</p>
+            </div>
+            
+            <div style="background: white; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+              <h2 style="color: #1a7a6e; margin: 0 0 16px 0;">Xin chào ${newUser.fullName}! 👋</h2>
+              <p style="color: #333; margin: 0 0 16px 0; line-height: 1.6;">Cảm ơn bạn đã đăng ký PawCare. Để hoàn tất quá trình đăng ký, vui lòng xác minh email của bạn bằng cách nhấp vào nút bên dưới:</p>
+              
+              <div style="text-align: center; margin: 32px 0;">
+                <a href="${verifyLink}" style="display: inline-block; background: linear-gradient(135deg, #1a7a6e 0%, #145f55 100%); color: white; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px; transition: opacity 0.3s;">
+                  ✓ Xác minh email của tôi
+                </a>
+              </div>
+              
+              <p style="color: #666; margin: 24px 0 0 0; font-size: 14px; line-height: 1.6;">Hoặc sao chép link này vào trình duyệt:<br><span style="word-break: break-all; color: #1a7a6e;">${verifyLink}</span></p>
+            </div>
+            
+            <div style="background: #e8f5f3; padding: 16px; border-radius: 6px; margin-bottom: 24px;">
+              <h3 style="color: #1a7a6e; margin: 0 0 8px 0; font-size: 14px;">💡 Tiếp theo?</h3>
+              <ul style="margin: 8px 0; padding-left: 20px; color: #333; font-size: 14px;">
+                <li style="margin: 4px 0;">Hoàn tất hồ sơ của bạn</li>
+                <li style="margin: 4px 0;">Tìm kiếm dịch vụ cho thú cưng yêu của bạn</li>
+                <li style="margin: 4px 0;">Đặt lịch hẹn với những chuyên gia</li>
+              </ul>
+            </div>
+            
+            <p style="color: #888; font-size: 12px; margin: 0; text-align: center; border-top: 1px solid #e0e0e0; padding-top: 16px;">
+              © 2024 PawCare. All rights reserved. | <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" style="color: #1a7a6e; text-decoration: none;">Trở về trang chủ</a>
+            </p>
+          </div>
+        `,
+      });
+      console.log('✅ Email xác minh đã được gửi tới:', newUser.email);
+    } catch (emailError) {
+      console.error('⚠️  Lỗi gửi email xác minh:', emailError.message);
+      // Không throw error, cho phép user đăng ký thành công dù email gửi thất bại
+    }
+
+    // 7. Tạo tokens
     const accessToken = generateAccessToken(newUser._id, newUser.role);
     const refreshToken = generateRefreshToken(newUser._id);
 
-    // 6. Lưu refresh token
+    // 8. Lưu refresh token
     newUser.refreshTokens.push({
       token: refreshToken,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -74,7 +135,7 @@ export const registerImproved = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Đăng ký thành công. Vui lòng xác minh email của bạn',
+      message: 'Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản của bạn',
       data: {
         user: sanitizeUser(newUser),
         accessToken,
