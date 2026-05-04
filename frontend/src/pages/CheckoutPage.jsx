@@ -39,7 +39,7 @@ const CheckoutPage = () => {
 
   // Load cart từ localStorage
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
+    const savedCart = localStorage.getItem('pawshop_cart');
     if (savedCart) {
       try {
         const cart = JSON.parse(savedCart);
@@ -160,7 +160,7 @@ const CheckoutPage = () => {
       }
 
       // Xóa giỏ hàng
-      localStorage.removeItem('cart');
+      localStorage.removeItem('pawshop_cart');
 
       // Redirect tới VNPay
       setSuccess('✅ Đang chuyển hướng tới VNPay...');
@@ -180,7 +180,7 @@ const CheckoutPage = () => {
       (item) => item._id !== itemId && item.id !== itemId
     );
     setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    localStorage.setItem('pawshop_cart', JSON.stringify(updatedCart));
     calculatePricing(updatedCart);
   };
 
