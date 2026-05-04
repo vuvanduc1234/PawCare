@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-// Helper: hiển thị flaticon hoặc fallback emoji nếu font chưa load
 const NavIcon = ({ iconClass, emoji, style = {} }) => {
-  const [loaded, setLoaded] = React.useState(null); // null=checking, true/false
+  const [loaded, setLoaded] = React.useState(null);
 
   React.useEffect(() => {
-    // Kiểm tra Flaticon đã load chưa bằng cách đo width của icon test
     const el = document.createElement('i');
     el.className = 'fi fi-rr-home';
     el.style.cssText =
@@ -18,7 +16,6 @@ const NavIcon = ({ iconClass, emoji, style = {} }) => {
       document.body.removeChild(el);
       setLoaded(w > 0);
     };
-    // Nếu CSS chưa parse xong thì chờ thêm
     if (document.fonts?.ready) {
       document.fonts.ready.then(check);
     } else {
@@ -26,13 +23,9 @@ const NavIcon = ({ iconClass, emoji, style = {} }) => {
     }
   }, []);
 
-  // Khi đang check hoặc load thành công → dùng icon
   if (loaded !== false) {
-    return (
-      <i className={`${iconClass}`} style={{ fontSize: '1.2rem', ...style }} />
-    );
+    return <i className={iconClass} style={{ fontSize: '1.2rem', ...style }} />;
   }
-  // Fallback emoji
   return <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{emoji}</span>;
 };
 
@@ -41,6 +34,18 @@ const Header = () => {
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const getNavItems = () => {
     const commonItems = [
@@ -113,6 +118,7 @@ const Header = () => {
       ];
     }
 
+    // User thường — KHÔNG có "Đặt lịch hẹn" vì đã có nút CTA riêng cuối navbar
     return [
       { label: 'Trang chủ', path: '/', icon: 'fi fi-rr-home', iconEmoji: '🏠' },
       {
@@ -125,7 +131,7 @@ const Header = () => {
         label: 'Khách sạn thú cưng',
         path: '/hotel',
         icon: 'fi fi-rr-inbox',
-        iconEmoji: '✉️',
+        iconEmoji: '🏨',
       },
       {
         label: 'PawShop',
@@ -139,12 +145,6 @@ const Header = () => {
         icon: 'fi fi-rr-book-open',
         iconEmoji: '📖',
       },
-      {
-        label: 'Đặt lịch hẹn',
-        path: '/bookings',
-        icon: 'fi fi-rr-calendar',
-        iconEmoji: '📅',
-      },
     ];
   };
 
@@ -157,6 +157,21 @@ const Header = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const getInitials = (fullName) => {
+    if (!fullName) return 'U';
+    return fullName
+      .split(' ')
+      .map((w) => w[0])
+      .slice(-2)
+      .join('')
+      .toUpperCase();
+  };
+
+  const getShortName = (fullName) => {
+    if (!fullName) return 'Tài khoản';
+    return fullName.split(' ').slice(-2).join(' ');
   };
 
   const navItems = getNavItems();
@@ -173,28 +188,10 @@ const Header = () => {
           --teal-pale: #e8f5f3;
           --teal-light: #4da898;
           --coral: #e07b5a;
-          --peach: #f5a87a;
           --gold: #c9a84c;
           --text-mid: #444;
           --text-light: #888;
         }
-
-        .pawcare-topbar {
-          background: var(--teal-dark);
-          color: rgba(255,255,255,0.8);
-          font-size: 0.72rem;
-          letter-spacing: 0.01em;
-        }
-
-        .pawcare-topbar a {
-          color: rgba(255,255,255,0.8);
-          text-decoration: none;
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          transition: color 0.2s;
-        }
-        .pawcare-topbar a:hover { color: #fff; }
 
         .pawcare-header {
           background: #fff;
@@ -269,9 +266,7 @@ const Header = () => {
           align-items: center;
           justify-content: center;
         }
-        .pawcare-nav-link i {
-          font-size: 1.2rem;
-        }
+        .pawcare-nav-link i { font-size: 1.2rem; }
 
         .pawcare-book-btn {
           background: var(--teal-dark);
@@ -291,8 +286,122 @@ const Header = () => {
           text-transform: uppercase;
           transition: background 0.2s;
           border-bottom: 3px solid transparent;
+          white-space: nowrap;
         }
         .pawcare-book-btn:hover { background: #0e4840; }
+
+        /* User area trong navbar */
+        .pawcare-nav-user-area {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+          padding: 0 8px;
+          border-left: 1px solid rgba(255,255,255,0.15);
+          position: relative;
+        }
+
+        .pawcare-nav-user {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          color: rgba(255,255,255,0.85);
+          text-decoration: none;
+          font-size: 0.75rem;
+          padding: 5px 8px;
+          border-radius: 2rem;
+          transition: background 0.2s;
+          white-space: nowrap;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .pawcare-nav-user:hover {
+          background: rgba(255,255,255,0.12);
+          color: #fff;
+        }
+
+        .pawcare-avatar {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.2);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.65rem;
+          font-weight: 700;
+          color: #fff;
+          flex-shrink: 0;
+          border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Dropdown profile */
+        .pawcare-profile-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: rgba(255,255,255,0.9);
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 2rem;
+          padding: 5px 12px 5px 6px;
+          cursor: pointer;
+          font-size: 0.78rem;
+          font-family: inherit;
+          font-weight: 600;
+          transition: background 0.2s;
+          white-space: nowrap;
+        }
+        .pawcare-profile-btn:hover { background: rgba(255,255,255,0.18); }
+
+        .pawcare-dropdown {
+          position: absolute;
+          top: calc(100% + 6px);
+          right: 0;
+          background: #fff;
+          border: 1px solid #e0eeec;
+          border-radius: 10px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+          min-width: 200px;
+          z-index: 200;
+          overflow: hidden;
+        }
+        .pawcare-dropdown-header {
+          padding: 14px 16px 10px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .pawcare-dropdown-name {
+          font-weight: 700;
+          font-size: 0.88rem;
+          color: var(--teal);
+          line-height: 1.3;
+        }
+        .pawcare-dropdown-role {
+          font-size: 0.72rem;
+          color: var(--text-light);
+          margin-top: 2px;
+        }
+        .pawcare-dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 16px;
+          font-size: 0.83rem;
+          color: var(--text-mid);
+          text-decoration: none;
+          transition: background 0.15s;
+          cursor: pointer;
+          background: none;
+          border: none;
+          width: 100%;
+          text-align: left;
+          font-family: inherit;
+        }
+        .pawcare-dropdown-item:hover { background: var(--teal-pale); color: var(--teal); }
+        .pawcare-dropdown-item.danger { color: #c0392b; }
+        .pawcare-dropdown-item.danger:hover { background: #fdf0ee; color: #c0392b; }
+        .pawcare-dropdown-divider { border: none; border-top: 1px solid #f0f0f0; margin: 4px 0; }
 
         .pawcare-info-block {
           display: flex;
@@ -312,17 +421,8 @@ const Header = () => {
           font-size: 1rem;
           flex-shrink: 0;
         }
-        .pawcare-info-block .label {
-          font-size: 0.68rem;
-          color: var(--text-light);
-          line-height: 1.2;
-        }
-        .pawcare-info-block .value {
-          font-weight: 700;
-          color: var(--teal);
-          font-size: 0.85rem;
-          line-height: 1.2;
-        }
+        .pawcare-info-block .label { font-size: 0.68rem; color: var(--text-light); line-height: 1.2; }
+        .pawcare-info-block .value { font-weight: 700; color: var(--teal); font-size: 0.85rem; line-height: 1.2; }
 
         .pawcare-btn-login {
           border: 1.5px solid var(--teal);
@@ -350,12 +450,6 @@ const Header = () => {
         }
         .pawcare-btn-register:hover { opacity: 0.85; }
 
-        .pawcare-logo-img {
-          width: 70px;
-          height: 70px;
-          object-fit: contain;
-        }
-
         .pawcare-logo-icon {
           position: relative;
           width: 70px;
@@ -364,11 +458,7 @@ const Header = () => {
           align-items: center;
           justify-content: center;
         }
-
-        .paw-svg {
-          width: 66px;
-          height: 56px;
-        }
+        .paw-svg { width: 66px; height: 56px; }
 
         /* Mobile */
         .pawcare-mobile-menu {
@@ -391,103 +481,11 @@ const Header = () => {
         }
         .pawcare-mobile-link:hover { background: var(--teal-pale); }
 
-        /* Flaticon enhancement */
-        .flaticon-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .flaticon-white {
-          filter: brightness(0) invert(1);
-        }
-        .flaticon-teal {
-          filter: invert(35%) sepia(25%) saturate(850%) hue-rotate(160deg) brightness(100%);
-        }
-        .flaticon-coral {
-          filter: invert(45%) sepia(55%) saturate(1000%) hue-rotate(350deg) brightness(105%);
-        }
+        .flaticon-white { filter: brightness(0) invert(1); }
+        .flaticon-teal { filter: invert(35%) sepia(25%) saturate(850%) hue-rotate(160deg) brightness(100%); }
       `}</style>
 
-      {/* Top bar */}
-      <div className="pawcare-topbar hidden md:block">
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: '0 auto',
-            padding: '5px 24px',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            gap: 20,
-          }}
-        >
-          {isAuthenticated ? (
-            <>
-              <a
-                href="/profile"
-                style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
-              >
-                <i
-                  className="fi fi-rr-user flaticon-white"
-                  style={{ fontSize: '0.9rem' }}
-                />
-                <span>{user?.fullName || 'Tài khoản'}</span>
-              </a>
-              <button
-                onClick={handleLogout}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(255,255,255,0.8)',
-                  cursor: 'pointer',
-                  fontSize: '0.72rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                }}
-              >
-                <i
-                  className="fi fi-rr-exit flaticon-white"
-                  style={{ fontSize: '0.9rem' }}
-                />{' '}
-                Đăng xuất
-              </button>
-            </>
-          ) : (
-            <>
-              <a
-                href="/login"
-                style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
-              >
-                <i
-                  className="fi fi-rr-user flaticon-white"
-                  style={{ fontSize: '0.9rem' }}
-                />
-                <span>Đăng nhập</span>
-              </a>
-              <span style={{ opacity: 0.4 }}>|</span>
-              <a
-                href="/cart"
-                style={{
-                  color: 'rgba(255,255,255,0.8)',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                }}
-              >
-                <i
-                  className="fi fi-rr-shopping-bag flaticon-white"
-                  style={{ fontSize: '0.9rem' }}
-                />
-                <span>Giỏ hàng</span>
-              </a>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Main header */}
+      {/* Main header — không có topbar riêng */}
       <header className="pawcare-header sticky top-0 z-50">
         <div
           style={{
@@ -510,14 +508,12 @@ const Header = () => {
               flexShrink: 0,
             }}
           >
-            {/* SVG logo mimic — dog + cat + paw */}
             <div className="pawcare-logo-icon">
               <svg
                 className="paw-svg"
                 viewBox="0 0 120 100"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                {/* Dog silhouette left */}
                 <ellipse
                   cx="28"
                   cy="72"
@@ -536,7 +532,6 @@ const Header = () => {
                   opacity="0.2"
                   transform="rotate(-20 18 52)"
                 />
-                {/* Cat silhouette right */}
                 <ellipse
                   cx="92"
                   cy="72"
@@ -556,7 +551,6 @@ const Header = () => {
                   fill="#1a7a6e"
                   opacity="0.25"
                 />
-                {/* Big paw in center */}
                 <ellipse cx="60" cy="62" rx="22" ry="20" fill="#1a7a6e" />
                 <ellipse cx="48" cy="44" rx="7" ry="9" fill="#1a7a6e" />
                 <ellipse cx="60" cy="40" rx="7" ry="9" fill="#1a7a6e" />
@@ -602,7 +596,7 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Contact info */}
+          {/* Contact info + auth — KHÔNG hiện tên user ở đây */}
           <div
             className="hidden md:flex items-center"
             style={{ gap: 20, marginLeft: 'auto' }}
@@ -633,7 +627,7 @@ const Header = () => {
               </div>
             </div>
 
-            {/* Auth buttons in topbar style — already in top bar, but keep compact here for non-auth */}
+            {/* Chỉ hiện nút login/register khi chưa đăng nhập */}
             {!isAuthenticated && (
               <div style={{ display: 'flex', gap: 8 }}>
                 <Link to="/login" className="pawcare-btn-login">
@@ -643,26 +637,6 @@ const Header = () => {
                   Đăng ký
                 </Link>
               </div>
-            )}
-            {isAuthenticated && (
-              <Link
-                to="/profile"
-                style={{
-                  color: 'var(--text-mid)',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                }}
-              >
-                <i
-                  className="fi fi-rr-user flaticon-teal"
-                  style={{ fontSize: '0.9rem' }}
-                />
-                {user?.fullName || 'Tài khoản'}
-              </Link>
             )}
           </div>
 
@@ -694,6 +668,7 @@ const Header = () => {
               alignItems: 'stretch',
             }}
           >
+            {/* Nav links */}
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -713,11 +688,9 @@ const Header = () => {
                 <span>{item.label.toUpperCase()}</span>
               </Link>
             ))}
-            <Link
-              to="/bookings"
-              className="pawcare-book-btn"
-              style={{ marginLeft: 'auto' }}
-            >
+
+            {/* Nút CTA đặt lịch — duy nhất, không trùng */}
+            <Link to="/bookings" className="pawcare-book-btn">
               <span className="nav-icon">
                 <NavIcon
                   iconClass="fi fi-rr-calendar flaticon-white"
@@ -726,6 +699,128 @@ const Header = () => {
               </span>
               <span>ĐẶT LỊCH HẸN</span>
             </Link>
+
+            {/* User area — dropdown */}
+            <div
+              className="pawcare-nav-user-area"
+              style={{ marginLeft: 'auto' }}
+              ref={profileRef}
+            >
+              {isAuthenticated ? (
+                <>
+                  {/* Profile dropdown trigger */}
+                  <button
+                    className="pawcare-profile-btn"
+                    onClick={() => setProfileOpen((v) => !v)}
+                  >
+                    <span className="pawcare-avatar">
+                      {getInitials(user?.fullName)}
+                    </span>
+                    <span
+                      style={{
+                        maxWidth: 90,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {getShortName(user?.fullName)}
+                    </span>
+                    <i
+                      className="fi fi-rr-angle-small-down flaticon-white"
+                      style={{
+                        fontSize: '0.9rem',
+                        transition: 'transform 0.2s',
+                        transform: profileOpen
+                          ? 'rotate(180deg)'
+                          : 'rotate(0deg)',
+                      }}
+                    />
+                  </button>
+
+                  {/* Dropdown menu */}
+                  {profileOpen && (
+                    <div className="pawcare-dropdown">
+                      <div className="pawcare-dropdown-header">
+                        <div className="pawcare-dropdown-name">
+                          {user?.fullName || 'Tài khoản'}
+                        </div>
+                        <div className="pawcare-dropdown-role">
+                          {user?.role === 'admin'
+                            ? 'Quản trị viên'
+                            : user?.role === 'provider'
+                              ? 'Nhà cung cấp'
+                              : 'Thành viên'}
+                        </div>
+                      </div>
+                      <Link
+                        to="/profile"
+                        className="pawcare-dropdown-item"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <i
+                          className="fi fi-rr-user flaticon-teal"
+                          style={{ fontSize: '0.95rem' }}
+                        />
+                        Thông tin cá nhân
+                      </Link>
+                      <Link
+                        to="/bookings"
+                        className="pawcare-dropdown-item"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <i
+                          className="fi fi-rr-calendar flaticon-teal"
+                          style={{ fontSize: '0.95rem' }}
+                        />
+                        Lịch hẹn của tôi
+                      </Link>
+                      <Link
+                        to="/cart"
+                        className="pawcare-dropdown-item"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <i
+                          className="fi fi-rr-shopping-bag flaticon-teal"
+                          style={{ fontSize: '0.95rem' }}
+                        />
+                        Giỏ hàng
+                      </Link>
+                      <hr className="pawcare-dropdown-divider" />
+                      <button
+                        className="pawcare-dropdown-item danger"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          handleLogout();
+                        }}
+                      >
+                        <i
+                          className="fi fi-rr-exit"
+                          style={{ fontSize: '0.95rem', color: '#c0392b' }}
+                        />
+                        Đăng xuất
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <a href="/login" className="pawcare-nav-user">
+                    <i
+                      className="fi fi-rr-user flaticon-white"
+                      style={{ fontSize: '1rem' }}
+                    />
+                    <span>Đăng nhập</span>
+                  </a>
+                  <a href="/cart" className="pawcare-nav-user">
+                    <i
+                      className="fi fi-rr-shopping-bag flaticon-white"
+                      style={{ fontSize: '1rem' }}
+                    />
+                  </a>
+                </>
+              )}
+            </div>
           </div>
         </nav>
 
@@ -761,6 +856,16 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
+
+            <Link
+              to="/bookings"
+              onClick={() => setMobileMenuOpen(false)}
+              className="pawcare-mobile-link"
+            >
+              <span style={{ marginRight: '8px' }}>📅</span>
+              Đặt lịch hẹn
+            </Link>
+
             {isAuthenticated ? (
               <>
                 <Link
@@ -772,7 +877,18 @@ const Header = () => {
                     className="fi fi-rr-user flaticon-teal"
                     style={{ fontSize: '1rem', marginRight: '8px' }}
                   />
-                  Tài khoản
+                  {user?.fullName || 'Tài khoản'}
+                </Link>
+                <Link
+                  to="/cart"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="pawcare-mobile-link"
+                >
+                  <i
+                    className="fi fi-rr-shopping-bag flaticon-teal"
+                    style={{ fontSize: '1rem', marginRight: '8px' }}
+                  />
+                  Giỏ hàng
                 </Link>
                 <button
                   onClick={handleLogout}
