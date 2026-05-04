@@ -206,12 +206,20 @@ const ProviderDashboardPage = () => {
               </h1>
             </div>
 
-            <button
-              onClick={() => navigate('/provider/services/new')}
-              className="px-5 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition flex items-center gap-2"
-            >
-              ➕ Thêm dịch vụ mới
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/provider/products')}
+                className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2"
+              >
+                📦 Quản lý sản phẩm
+              </button>
+              <button
+                onClick={() => navigate('/provider/services/new')}
+                className="px-5 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition flex items-center gap-2"
+              >
+                ➕ Thêm dịch vụ mới
+              </button>
+            </div>
           </div>
 
           {error && (

@@ -11,6 +11,7 @@ import providerRoutes from './routes/providerRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import serviceRoutes from './routes/serviceRoutes.js';
 import postRoutes from './routes/postRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
@@ -50,6 +51,7 @@ app.use('/api/providers', providerRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Route kiểm tra sức khỏe

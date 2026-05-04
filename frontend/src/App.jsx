@@ -5,6 +5,7 @@ import { PrivateRoute } from './components/common';
 
 import HomePage from './pages/Home';
 import NotFoundPage from './pages/NotFoundPage';
+import PawShopPage from './pages/PawShopPage';
 
 // Auth pages
 import LoginPage from './pages/Auth/LoginPage';
@@ -34,6 +35,8 @@ import MyBookingsPage from './pages/Booking/MyBookingsPage';
 // Provider
 import ProviderDashboardPage from './pages/Provider/ProviderDashboardPage';
 import AddServicePage from './pages/Provider/AddServicePage';
+import AddProductPage from './pages/Provider/AddProductPage';
+import ManageProductsPage from './pages/Provider/ManageProductsPage';
 
 // Admin
 import AdminDashboardPage from './pages/Admin/AdminDashboardPage';
@@ -84,6 +87,9 @@ function App() {
           {/* Service - public */}
           <Route path="/services" element={<ServiceSearchPage />} />
           <Route path="/services/:id" element={<ServiceDetailPage />} />
+
+          {/* PawShop - public */}
+          <Route path="/shop" element={<PawShopPage />} />
 
           {/* Community */}
           <Route
@@ -139,6 +145,22 @@ function App() {
             element={
               <PrivateRoute requiredRole="provider">
                 <AddServicePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/provider/products"
+            element={
+              <PrivateRoute requiredRole="provider">
+                <ManageProductsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/provider/products/new"
+            element={
+              <PrivateRoute requiredRole="provider">
+                <AddProductPage />
               </PrivateRoute>
             }
           />

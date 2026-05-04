@@ -142,7 +142,7 @@ const Header = () => {
       {
         label: 'Blog & Kiến thức',
         path: '/community',
-        icon: 'fi fi-rr-book-open',
+        icon: '',
         iconEmoji: '📖',
       },
     ];
