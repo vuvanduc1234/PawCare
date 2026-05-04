@@ -6,6 +6,8 @@ import { PrivateRoute } from './components/common';
 import HomePage from './pages/Home';
 import NotFoundPage from './pages/NotFoundPage';
 import PawShopPage from './pages/PawShopPage';
+import CheckoutPage from './pages/CheckoutPage';
+import VNPayCallbackPage from './pages/VNPayCallbackPage';
 
 // Auth pages
 import LoginPage from './pages/Auth/LoginPage';
@@ -90,6 +92,20 @@ function App() {
 
           {/* PawShop - public */}
           <Route path="/shop" element={<PawShopPage />} />
+
+          {/* Checkout - protected */}
+          <Route
+            path="/checkout"
+            element={
+              <PrivateRoute>
+                <CheckoutPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/checkout/vnpay-callback"
+            element={<VNPayCallbackPage />}
+          />
 
           {/* Community */}
           <Route
