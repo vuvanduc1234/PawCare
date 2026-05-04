@@ -26,6 +26,18 @@ export const createOrder = async (req, res) => {
       });
     }
 
+    // Tính toán giá
+    const subtotal = items.reduce((sum, item) => {
+      const discount = (item.price * item.quantity * (item.discount || 0)) / 100 || 0;
+      const itemSubtotal = item.price * item.quantity - discount;
+      return sum + itemSubtotal;
+    }, 0);
+
+    const shippingFee = 30000;
+    const taxAmount = Math.round(subtotal * 0.1); // 10% VAT
+    const discountAmount = discountCode ? 50000 : 0;
+    const totalAmount = subtotal + shippingFee + taxAmount - discountAmount;
+
     // Tạo đơn hàng
     const order = new Order({
       user: req.user._id,
@@ -34,7 +46,11 @@ export const createOrder = async (req, res) => {
       paymentMethod: 'vnpay',
       paymentStatus: 'pending',
       orderStatus: 'pending',
-      discountAmount: discountCode ? 50000 : 0, // TODO: Thêm logic discount code
+      subtotal,
+      shippingFee,
+      taxAmount,
+      discountAmount,
+      totalAmount,
     });
 
     await order.save();
