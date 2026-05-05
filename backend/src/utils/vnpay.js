@@ -3,7 +3,6 @@ import crypto from 'crypto';
 const VNP_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
 
 export const createVNPayPaymentUrl = (orderData) => {
-  // ✅ Đọc env BÊN TRONG function — tránh chạy trước dotenv.config()
   const VNP_TMN_CODE = process.env.VNPAY_TMN_CODE;
   const VNP_HASH_SECRET = process.env.VNPAY_HASH_SECRET;
   const VNP_RETURN_URL = process.env.VNPAY_RETURN_URL;
@@ -27,22 +26,28 @@ export const createVNPayPaymentUrl = (orderData) => {
     vnp_ReturnUrl: VNP_RETURN_URL,
     vnp_IpAddr: orderData.ipAddress,
     vnp_CreateDate: formatDate(new Date()),
-    // ✅ Đưa SecureHashType vào params TRƯỚC khi ký để đúng spec VNPay
-    vnp_SecureHashType: 'SHA512',
   };
 
+  // ✅ Bước 1: Sort params theo alphabet
   const sortedParams = sortObject(vnpParams);
-  const signData = buildQuery(sortedParams, false);
 
+  // ✅ Bước 2: Build chuỗi ký — encode VALUE, KHÔNG encode key, dùng & nối
+  const signData = Object.keys(sortedParams)
+    .map((key) => `${key}=${encodeURIComponent(sortedParams[key])}`)
+    .join('&');
+
+  // ✅ Bước 3: Ký HMAC-SHA512
   const secureHash = crypto
     .createHmac('sha512', VNP_HASH_SECRET)
     .update(signData)
     .digest('hex');
 
-  const queryString = buildQuery(sortedParams, true);
+  // ✅ Bước 4: Build URL cuối — append SecureHashType và SecureHash SAU khi ký
+  const queryString = Object.keys(sortedParams)
+    .map((key) => `${key}=${encodeURIComponent(sortedParams[key])}`)
+    .join('&');
 
-  // ✅ Chỉ append SecureHash — SecureHashType đã nằm trong queryString
-  const paymentUrl = `${VNP_URL}?${queryString}&vnp_SecureHash=${secureHash}`;
+  const paymentUrl = `${VNP_URL}?${queryString}&vnp_SecureHashType=SHA512&vnp_SecureHash=${secureHash}`;
 
   return {
     paymentUrl,
@@ -55,12 +60,17 @@ export const verifyVNPayCallback = (vnpParams) => {
 
   const secureHash = vnpParams.vnp_SecureHash;
 
+  // ✅ Loại bỏ vnp_SecureHash và vnp_SecureHashType trước khi verify
   const verifyParams = { ...vnpParams };
   delete verifyParams.vnp_SecureHash;
   delete verifyParams.vnp_SecureHashType;
 
   const sortedParams = sortObject(verifyParams);
-  const signData = buildQuery(sortedParams, false);
+
+  // ✅ Build chuỗi verify giống hệt lúc ký
+  const signData = Object.keys(sortedParams)
+    .map((key) => `${key}=${encodeURIComponent(sortedParams[key])}`)
+    .join('&');
 
   const computedHash = crypto
     .createHmac('sha512', VNP_HASH_SECRET)
@@ -86,16 +96,6 @@ function sortObject(obj) {
       result[key] = obj[key];
       return result;
     }, {});
-}
-
-function buildQuery(obj, encode = true) {
-  return Object.keys(obj)
-    .map((key) =>
-      encode
-        ? `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`
-        : `${key}=${obj[key]}`
-    )
-    .join('&');
 }
 
 function formatDate(date) {
