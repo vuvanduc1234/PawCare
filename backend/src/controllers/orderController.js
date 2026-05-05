@@ -54,6 +54,7 @@ export const createOrder = async (req, res) => {
 
     res.json({ success: true, data: order });
   } catch (err) {
+    console.error('❌ createOrder error:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 };
@@ -81,10 +82,13 @@ export const getPaymentUrl = async (req, res) => {
       ipAddress: ipAddr,
     });
 
-    console.log('Payment URL:', paymentInfo.paymentUrl);
+    console.log('✅ Payment URL:', paymentInfo.paymentUrl);
 
     res.json({ success: true, data: paymentInfo });
   } catch (err) {
+    // ✅ Log chi tiết để debug trên Render
+    console.error('❌ getPaymentUrl error:', err.message);
+    console.error('   Stack:', err.stack);
     res.status(500).json({ success: false, message: err.message });
   }
 };
@@ -120,6 +124,7 @@ export const vnpayCallback = async (req, res) => {
       );
     }
   } catch (err) {
+    console.error('❌ vnpayCallback error:', err.message);
     return res.redirect(`${FRONTEND_URL}/payment-failed`);
   }
 };
