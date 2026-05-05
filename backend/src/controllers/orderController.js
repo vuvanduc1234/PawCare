@@ -1,5 +1,6 @@
 import Order from '../models/Order.js';
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 import {
   createVNPayPaymentUrl,
   verifyVNPayCallback,
@@ -25,36 +26,42 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Giỏ hàng trống' });
     }
 
-    const subtotal = items.reduce((sum, item) => {
-      const discount = (item.price * item.quantity * (item.discount || 0)) / 100;
-      return sum + (item.price * item.quantity - discount);
-    }, 0);
+    // ✅ Sanitize items — đảm bảo itemId là ObjectId hợp lệ, tránh Mongoose validation error
+    const sanitizedItems = items.map((item) => ({
+      type: item.type || 'product',
+      itemId: mongoose.isValidObjectId(item.itemId)
+        ? item.itemId
+        : new mongoose.Types.ObjectId(),
+      name: item.name,
+      price: Number(item.price),
+      quantity: Number(item.quantity) || 1,
+      discount: Number(item.discount) || 0,
+    }));
 
-    const shippingFee = 30000;
-    const taxAmount = Math.round(subtotal * 0.1);
     const discountAmount = discountCode ? 50000 : 0;
-    const totalAmount = subtotal + shippingFee + taxAmount - discountAmount;
 
     const order = new Order({
       user: req.user._id,
       orderCode: generateOrderCode(),
-      items,
+      items: sanitizedItems,
       shippingAddress,
       paymentMethod: 'vnpay',
       paymentStatus: 'pending',
       orderStatus: 'pending',
-      subtotal,
-      shippingFee,
-      taxAmount,
+      shippingFee: 30000,
       discountAmount,
-      totalAmount,
+      subtotal: 0,   // pre('save') hook sẽ tự tính lại
+      totalAmount: 0, // pre('save') hook sẽ tự tính lại
     });
 
     await order.save();
 
+    console.log('✅ Order created:', order.orderCode, '- Total:', order.totalAmount);
+
     res.json({ success: true, data: order });
   } catch (err) {
     console.error('❌ createOrder error:', err.message);
+    console.error('   Stack:', err.stack);
     res.status(500).json({ success: false, message: err.message });
   }
 };
@@ -70,23 +77,26 @@ export const getPaymentUrl = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Đơn hàng không tồn tại' });
     }
 
-    const ipAddr =
+    // ✅ Lấy IP đầu tiên nếu x-forwarded-for có nhiều IP (vd: "ip1, ip2, ip3")
+    const rawIp =
       req.headers['x-forwarded-for'] ||
       req.socket?.remoteAddress ||
       req.ip ||
       '127.0.0.1';
+    const cleanIp = String(rawIp).split(',')[0].trim();
+
+    console.log('🔗 Creating payment URL:', order.orderCode, '- Amount:', order.totalAmount, '- IP:', cleanIp);
 
     const paymentInfo = createVNPayPaymentUrl({
       orderCode: order.orderCode,
       amount: order.totalAmount,
-      ipAddress: ipAddr,
+      ipAddress: cleanIp,
     });
 
     console.log('✅ Payment URL:', paymentInfo.paymentUrl);
 
     res.json({ success: true, data: paymentInfo });
   } catch (err) {
-    // ✅ Log chi tiết để debug trên Render
     console.error('❌ getPaymentUrl error:', err.message);
     console.error('   Stack:', err.stack);
     res.status(500).json({ success: false, message: err.message });
@@ -98,11 +108,15 @@ export const getPaymentUrl = async (req, res) => {
  */
 export const vnpayCallback = async (req, res) => {
   try {
+    console.log('📩 VNPay callback received:', req.query);
+
     const verify = verifyVNPayCallback(req.query);
+    console.log('🔍 Verify result:', verify);
 
     const order = await Order.findOne({ orderCode: verify.orderId });
 
     if (!order) {
+      console.error('❌ Order not found:', verify.orderId);
       return res.redirect(`${FRONTEND_URL}/payment-failed`);
     }
 
@@ -112,16 +126,14 @@ export const vnpayCallback = async (req, res) => {
       order.transactionId = verify.transactionNo;
       await order.save();
 
-      return res.redirect(
-        `${FRONTEND_URL}/payment-success?orderId=${order.orderCode}`
-      );
+      console.log('✅ Payment success:', order.orderCode);
+      return res.redirect(`${FRONTEND_URL}/payment-success?orderId=${order.orderCode}`);
     } else {
       order.paymentStatus = 'failed';
       await order.save();
 
-      return res.redirect(
-        `${FRONTEND_URL}/payment-failed?code=${verify.responseCode}`
-      );
+      console.log('❌ Payment failed:', order.orderCode, '- Code:', verify.responseCode);
+      return res.redirect(`${FRONTEND_URL}/payment-failed?code=${verify.responseCode}`);
     }
   } catch (err) {
     console.error('❌ vnpayCallback error:', err.message);
