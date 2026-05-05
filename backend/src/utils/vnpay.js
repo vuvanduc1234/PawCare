@@ -9,7 +9,7 @@ export const createVNPayPaymentUrl = (orderData) => {
 
   if (!VNP_TMN_CODE || !VNP_HASH_SECRET || !VNP_RETURN_URL) {
     throw new Error(
-      '❌ Thiếu cấu hình VNPay: VNPAY_TMN_CODE, VNPAY_HASH_SECRET, VNPAY_RETURN_URL phải được set trong .env'
+      '❌ Thiếu cấu hình VNPay: VNPAY_TMN_CODE, VNPAY_HASH_SECRET, VNPAY_RETURN_URL'
     );
   }
 
@@ -22,32 +22,38 @@ export const createVNPayPaymentUrl = (orderData) => {
     vnp_TxnRef: orderData.orderCode,
     vnp_OrderInfo: `Thanh toan don hang ${orderData.orderCode}`,
     vnp_OrderType: 'other',
-    vnp_Amount: orderData.amount * 100,
+    vnp_Amount: Math.round(orderData.amount * 100), // ✅ FIX
     vnp_ReturnUrl: VNP_RETURN_URL,
-    vnp_IpAddr: orderData.ipAddress,
+    vnp_IpAddr: orderData.ipAddress || '127.0.0.1',
     vnp_CreateDate: formatDate(new Date()),
   };
 
-  // ✅ Bước 1: Sort params theo alphabet
+  // ✅ Sort params
   const sortedParams = sortObject(vnpParams);
 
-  // ✅ Bước 2: Build chuỗi ký — encode VALUE, KHÔNG encode key, dùng & nối
+  // ❌ KHÔNG encode khi ký
   const signData = Object.keys(sortedParams)
-    .map((key) => `${key}=${encodeURIComponent(sortedParams[key])}`)
+    .map((key) => `${key}=${sortedParams[key]}`)
     .join('&');
 
-  // ✅ Bước 3: Ký HMAC-SHA512
+  // ✅ Ký HMAC SHA512
   const secureHash = crypto
     .createHmac('sha512', VNP_HASH_SECRET)
     .update(signData)
     .digest('hex');
 
-  // ✅ Bước 4: Build URL cuối — append SecureHashType và SecureHash SAU khi ký
+  // ✅ Encode khi build URL
   const queryString = Object.keys(sortedParams)
     .map((key) => `${key}=${encodeURIComponent(sortedParams[key])}`)
     .join('&');
 
-  const paymentUrl = `${VNP_URL}?${queryString}&vnp_SecureHashType=SHA512&vnp_SecureHash=${secureHash}`;
+  const paymentUrl =
+    `${VNP_URL}?${queryString}` +
+    `&vnp_SecureHashType=SHA512&vnp_SecureHash=${secureHash}`;
+
+  // DEBUG nếu cần
+  console.log('SIGN DATA:', signData);
+  console.log('HASH:', secureHash);
 
   return {
     paymentUrl,
@@ -60,16 +66,16 @@ export const verifyVNPayCallback = (vnpParams) => {
 
   const secureHash = vnpParams.vnp_SecureHash;
 
-  // ✅ Loại bỏ vnp_SecureHash và vnp_SecureHashType trước khi verify
+  // ❌ Remove hash fields
   const verifyParams = { ...vnpParams };
   delete verifyParams.vnp_SecureHash;
   delete verifyParams.vnp_SecureHashType;
 
   const sortedParams = sortObject(verifyParams);
 
-  // ✅ Build chuỗi verify giống hệt lúc ký
+  // ❌ KHÔNG encode khi verify
   const signData = Object.keys(sortedParams)
-    .map((key) => `${key}=${encodeURIComponent(sortedParams[key])}`)
+    .map((key) => `${key}=${sortedParams[key]}`)
     .join('&');
 
   const computedHash = crypto
@@ -89,6 +95,10 @@ export const verifyVNPayCallback = (vnpParams) => {
   };
 };
 
+// =====================
+// HELPERS
+// =====================
+
 function sortObject(obj) {
   return Object.keys(obj)
     .sort()
@@ -105,5 +115,6 @@ function formatDate(date) {
   const h = String(date.getHours()).padStart(2, '0');
   const min = String(date.getMinutes()).padStart(2, '0');
   const s = String(date.getSeconds()).padStart(2, '0');
+
   return `${y}${m}${d}${h}${min}${s}`;
 }
