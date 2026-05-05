@@ -1,18 +1,19 @@
 import crypto from 'crypto';
 
-// ✅ Không dùng fallback cứng — nếu thiếu env sẽ báo lỗi ngay
-const VNP_TMN_CODE = process.env.VNPAY_TMN_CODE;
-const VNP_HASH_SECRET = process.env.VNPAY_HASH_SECRET;
 const VNP_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-const VNP_RETURN_URL = process.env.VNPAY_RETURN_URL;
-
-if (!VNP_TMN_CODE || !VNP_HASH_SECRET || !VNP_RETURN_URL) {
-  throw new Error(
-    '❌ Thiếu cấu hình VNPay: VNPAY_TMN_CODE, VNPAY_HASH_SECRET, VNPAY_RETURN_URL phải được set trong .env'
-  );
-}
 
 export const createVNPayPaymentUrl = (orderData) => {
+  // ✅ Đọc env BÊN TRONG function — tránh chạy trước dotenv.config()
+  const VNP_TMN_CODE = process.env.VNPAY_TMN_CODE;
+  const VNP_HASH_SECRET = process.env.VNPAY_HASH_SECRET;
+  const VNP_RETURN_URL = process.env.VNPAY_RETURN_URL;
+
+  if (!VNP_TMN_CODE || !VNP_HASH_SECRET || !VNP_RETURN_URL) {
+    throw new Error(
+      '❌ Thiếu cấu hình VNPay: VNPAY_TMN_CODE, VNPAY_HASH_SECRET, VNPAY_RETURN_URL phải được set trong .env'
+    );
+  }
+
   const vnpParams = {
     vnp_Version: '2.1.0',
     vnp_Command: 'pay',
@@ -31,7 +32,6 @@ export const createVNPayPaymentUrl = (orderData) => {
   };
 
   const sortedParams = sortObject(vnpParams);
-
   const signData = buildQuery(sortedParams, false);
 
   const secureHash = crypto
@@ -41,7 +41,7 @@ export const createVNPayPaymentUrl = (orderData) => {
 
   const queryString = buildQuery(sortedParams, true);
 
-  // ✅ Chỉ append SecureHash, không append SecureHashType nữa (đã nằm trong queryString)
+  // ✅ Chỉ append SecureHash — SecureHashType đã nằm trong queryString
   const paymentUrl = `${VNP_URL}?${queryString}&vnp_SecureHash=${secureHash}`;
 
   return {
@@ -51,6 +51,8 @@ export const createVNPayPaymentUrl = (orderData) => {
 };
 
 export const verifyVNPayCallback = (vnpParams) => {
+  const VNP_HASH_SECRET = process.env.VNPAY_HASH_SECRET;
+
   const secureHash = vnpParams.vnp_SecureHash;
 
   const verifyParams = { ...vnpParams };
@@ -58,7 +60,6 @@ export const verifyVNPayCallback = (vnpParams) => {
   delete verifyParams.vnp_SecureHashType;
 
   const sortedParams = sortObject(verifyParams);
-
   const signData = buildQuery(sortedParams, false);
 
   const computedHash = crypto
