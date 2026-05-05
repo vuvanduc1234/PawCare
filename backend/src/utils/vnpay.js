@@ -1,13 +1,16 @@
 import crypto from 'crypto';
 
-const VNP_TMN_CODE = process.env.VNPAY_TMN_CODE || '2UY8B3EB';
-const VNP_HASH_SECRET = process.env.VNPAY_HASH_SECRET || 'demo123';
+// ✅ Không dùng fallback cứng — nếu thiếu env sẽ báo lỗi ngay
+const VNP_TMN_CODE = process.env.VNPAY_TMN_CODE;
+const VNP_HASH_SECRET = process.env.VNPAY_HASH_SECRET;
 const VNP_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+const VNP_RETURN_URL = process.env.VNPAY_RETURN_URL;
 
-// ✅ Phải trỏ về BACKEND để xử lý callback, không phải frontend
-const VNP_RETURN_URL =
-  process.env.VNPAY_RETURN_URL ||
-  'http://localhost:5000/api/orders/vnpay-callback';
+if (!VNP_TMN_CODE || !VNP_HASH_SECRET || !VNP_RETURN_URL) {
+  throw new Error(
+    '❌ Thiếu cấu hình VNPay: VNPAY_TMN_CODE, VNPAY_HASH_SECRET, VNPAY_RETURN_URL phải được set trong .env'
+  );
+}
 
 export const createVNPayPaymentUrl = (orderData) => {
   const vnpParams = {
@@ -23,6 +26,8 @@ export const createVNPayPaymentUrl = (orderData) => {
     vnp_ReturnUrl: VNP_RETURN_URL,
     vnp_IpAddr: orderData.ipAddress,
     vnp_CreateDate: formatDate(new Date()),
+    // ✅ Đưa SecureHashType vào params TRƯỚC khi ký để đúng spec VNPay
+    vnp_SecureHashType: 'SHA512',
   };
 
   const sortedParams = sortObject(vnpParams);
@@ -36,10 +41,8 @@ export const createVNPayPaymentUrl = (orderData) => {
 
   const queryString = buildQuery(sortedParams, true);
 
-  const paymentUrl =
-    `${VNP_URL}?${queryString}` +
-    `&vnp_SecureHashType=SHA512` +
-    `&vnp_SecureHash=${secureHash}`;
+  // ✅ Chỉ append SecureHash, không append SecureHashType nữa (đã nằm trong queryString)
+  const paymentUrl = `${VNP_URL}?${queryString}&vnp_SecureHash=${secureHash}`;
 
   return {
     paymentUrl,
