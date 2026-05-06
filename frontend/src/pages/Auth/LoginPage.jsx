@@ -1,136 +1,188 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LoginForm from '../../components/Auth/LoginForm';
-import { Header } from '../../components/common';
 
 const LoginPage = () => {
   return (
-    <>
-      <Header />
+    <div style={{ minHeight: '100vh', display: 'flex', background: '#f5f5f5' }}>
+      {/* Left Side - Green Background */}
       <div
         style={{
-          background: 'var(--cream)',
+          flex: 1,
+          background: 'linear-gradient(135deg, #2d8659 0%, #1f5c3e 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '2rem',
+          color: '#fff',
           minHeight: '100vh',
+          clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0 100%)',
+          '@media (max-width: 768px)': {
+            clipPath: 'none',
+            minHeight: 'auto',
+            paddingTop: '2rem',
+            paddingBottom: '2rem',
+          },
+        }}
+      >
+        {/* Logo Brand */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '2.5rem',
+              marginBottom: '1.5rem',
+              margin: '0 auto 1.5rem',
+            }}
+          >
+            🐾
+          </div>
+          <h1
+            style={{
+              fontSize: '2rem',
+              fontWeight: 700,
+              marginBottom: '0.5rem',
+              fontFamily: 'Quicksand, sans-serif',
+            }}
+          >
+            blueflame
+          </h1>
+          <p
+            style={{
+              fontSize: '0.95rem',
+              opacity: 0.9,
+              marginBottom: '1.5rem',
+              maxWidth: '280px',
+            }}
+          >
+            Dịch vụ chăm sóc thú cưng tuyệt vời
+          </p>
+        </div>
+
+        {/* Welcome Message */}
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: '2rem',
+            maxWidth: '320px',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: '1.6rem',
+              fontWeight: 600,
+              marginBottom: '1rem',
+              fontFamily: 'Quicksand, sans-serif',
+            }}
+          >
+            Welcome Back!
+          </h2>
+          <p
+            style={{
+              fontSize: '0.9rem',
+              opacity: 0.85,
+              lineHeight: 1.6,
+            }}
+          >
+            Vui lòng đăng nhập với thông tin tài khoản của bạn để tiếp tục
+          </p>
+        </div>
+      </div>
+
+      {/* Right Side - White Form */}
+      <div
+        style={{
+          flex: 1,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '3rem 1rem',
+          padding: '2rem',
+          background: '#fff',
         }}
       >
-        <div style={{ width: '100%', maxWidth: '420px' }}>
-          {/* Card */}
-          <div
-            style={{
-              background: '#fff',
-              border: '1.5px solid var(--border-light)',
-              padding: '2.8rem 2.5rem',
-            }}
-          >
-            {/* Logo */}
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.6rem',
-                  marginBottom: '0.75rem',
-                }}
-              >
-                <div
-                  style={{
-                    background: 'var(--teal)',
-                    color: 'var(--off)',
-                    width: '2.2rem',
-                    height: '2.2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1rem',
-                  }}
-                >
-                  🐾
-                </div>
-                <span
-                  style={{
-                    fontFamily: 'Quicksand, sans-serif',
-                    fontSize: '1.6rem',
-                    fontWeight: 600,
-                    color: 'var(--brown-dark)',
-                  }}
-                >
-                  Paw<span style={{ color: 'var(--teal)' }}>Care</span>
-                </span>
-              </div>
-              <p
-                style={{
-                  color: 'var(--text-light)',
-                  fontSize: '0.8rem',
-                  letterSpacing: '0.06em',
-                }}
-              >
-                Dịch vụ chăm sóc thú cưng tuyệt vời
-              </p>
-              <div
-                style={{
-                  width: '2rem',
-                  height: '1px',
-                  background: 'var(--teal)',
-                  margin: '1.2rem auto 0',
-                  opacity: 0.6,
-                }}
-              />
-            </div>
-
+        <div style={{ width: '100%', maxWidth: '380px' }}>
+          {/* Welcome Heading */}
+          <div style={{ marginBottom: '2rem' }}>
             <h2
               style={{
-                fontFamily: 'Quicksand, sans-serif',
                 fontSize: '1.8rem',
-                fontWeight: 300,
-                color: 'var(--brown-dark)',
-                textAlign: 'center',
-                marginBottom: '1.8rem',
+                fontWeight: 600,
+                color: '#1a1a1a',
+                marginBottom: '0.5rem',
+                fontFamily: 'Quicksand, sans-serif',
               }}
             >
-              Đăng nhập
+              welcome
             </h2>
-
-            <LoginForm />
-
             <p
               style={{
-                textAlign: 'center',
-                marginTop: '1.6rem',
-                fontSize: '0.82rem',
-                color: 'var(--text-mid)',
+                fontSize: '0.9rem',
+                color: '#999',
               }}
             >
-              Chưa có tài khoản?{' '}
-              <Link
-                to="/register"
-                style={{ color: 'var(--teal)', fontWeight: 500 }}
-                className="hover:underline"
-              >
-                Đăng ký ngay
-              </Link>
+              Login into your account to continue
             </p>
           </div>
 
-          {/* Bottom tagline */}
+          {/* Form */}
+          <LoginForm />
+
+          {/* Signup Link */}
           <p
             style={{
               textAlign: 'center',
               marginTop: '1.5rem',
-              fontFamily: 'Quicksand, sans-serif',
-              fontStyle: 'italic',
-              fontSize: '0.95rem',
-              color: 'var(--text-light)',
+              fontSize: '0.9rem',
+              color: '#666',
             }}
           >
-            Happy pets, happy life.
+            Don't have an account?{' '}
+            <Link
+              to="/register"
+              style={{
+                color: '#4fa79d',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              Sign up
+            </Link>
           </p>
         </div>
       </div>
-    </>
+
+      {/* Mobile Responsive */}
+      <style>{`
+        @media (max-width: 768px) {
+          div[style*="flex: 1"] {
+            flex: 1;
+          }
+          
+          div[style*="clipPath"] {
+            clipPath: none !important;
+            minHeight: auto !important;
+            paddingTop: 2rem !important;
+            paddingBottom: 2rem !important;
+            padding: 2rem 1.5rem !important;
+          }
+          
+          h1 {
+            font-size: 1.5rem !important;
+          }
+          
+          h2 {
+            font-size: 1.3rem !important;
+          }
+        }
+      `}</style>
+    </div>
   );
 };
 

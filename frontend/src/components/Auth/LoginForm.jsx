@@ -68,22 +68,26 @@ const LoginForm = () => {
           alignItems: 'center',
           justifyContent: 'center',
           gap: '10px',
-          border: '1.5px solid #dadce0',
-          borderRadius: '10px',
-          padding: '11px',
+          border: '1px solid #e0e0e0',
+          borderRadius: '8px',
+          padding: '12px',
           background: '#fff',
           cursor: 'pointer',
-          fontSize: '0.88rem',
-          fontWeight: 700,
-          color: '#3c4043',
-          marginBottom: '16px',
-          transition: 'box-shadow 0.2s',
+          fontSize: '0.9rem',
+          fontWeight: 600,
+          color: '#333',
+          marginBottom: '1.2rem',
+          transition: 'all 0.2s ease',
           fontFamily: 'Nunito, sans-serif',
         }}
-        onMouseOver={(e) =>
-          (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)')
-        }
-        onMouseOut={(e) => (e.currentTarget.style.boxShadow = 'none')}
+        onMouseOver={(e) => {
+          e.currentTarget.style.background = '#f9f9f9';
+          e.currentTarget.style.borderColor = '#d0d0d0';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.background = '#fff';
+          e.currentTarget.style.borderColor = '#e0e0e0';
+        }}
       >
         <svg width="18" height="18" viewBox="0 0 18 18">
           <path
@@ -103,7 +107,7 @@ const LoginForm = () => {
             d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"
           />
         </svg>
-        {googleLoading ? 'Đang chuyển hướng...' : 'Đăng nhập với Google'}
+        {googleLoading ? 'Đang chuyển hướng...' : 'Continue with Google'}
       </button>
 
       <div
@@ -111,27 +115,36 @@ const LoginForm = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
-          marginBottom: '16px',
+          marginBottom: '1.5rem',
         }}
       >
-        <div style={{ flex: 1, height: '1px', background: '#e0eeec' }} />
+        <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
         <span
           style={{
-            fontSize: '0.75rem',
-            color: 'var(--text-light)',
+            fontSize: '0.8rem',
+            color: '#999',
             fontWeight: 600,
           }}
         >
-          hoặc
+          or
         </span>
-        <div style={{ flex: 1, height: '1px', background: '#e0eeec' }} />
+        <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}
+      >
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            style={{
+              display: 'block',
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              color: '#333',
+              marginBottom: '0.5rem',
+            }}
           >
             Email
           </label>
@@ -139,7 +152,25 @@ const LoginForm = () => {
             id="email"
             type="email"
             placeholder="your@email.com"
-            className="input-field"
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              fontSize: '0.95rem',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              fontFamily: 'Nunito, sans-serif',
+              transition: 'all 0.2s ease',
+              background: '#fafafa',
+              boxSizing: 'border-box',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#4fa79d';
+              e.target.style.background = '#fff';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#ddd';
+              e.target.style.background = '#fafafa';
+            }}
             {...register('email', {
               required: 'Email không được bỏ trống',
               pattern: {
@@ -149,7 +180,15 @@ const LoginForm = () => {
             })}
           />
           {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+            <p
+              style={{
+                color: '#e74c3c',
+                fontSize: '0.8rem',
+                marginTop: '0.4rem',
+              }}
+            >
+              {errors.email.message}
+            </p>
           )}
         </div>
 
@@ -159,50 +198,112 @@ const LoginForm = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '4px',
+              marginBottom: '0.5rem',
             }}
           >
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              style={{
+                fontSize: '0.9rem',
+                fontWeight: 500,
+                color: '#333',
+              }}
             >
-              Mật khẩu
+              Password
             </label>
             <Link
               to="/forgot-password"
               style={{
-                fontSize: '0.78rem',
-                color: 'var(--teal)',
+                fontSize: '0.8rem',
+                color: '#4fa79d',
                 fontWeight: 600,
                 textDecoration: 'none',
+                transition: 'color 0.2s ease',
               }}
+              onMouseOver={(e) => (e.target.style.color = '#2d8659')}
+              onMouseOut={(e) => (e.target.style.color = '#4fa79d')}
             >
-              Quên mật khẩu?
+              Forgot password?
             </Link>
           </div>
           <input
             id="password"
             type="password"
             placeholder="••••••"
-            className="input-field"
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              fontSize: '0.95rem',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              fontFamily: 'Nunito, sans-serif',
+              transition: 'all 0.2s ease',
+              background: '#fafafa',
+              boxSizing: 'border-box',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#4fa79d';
+              e.target.style.background = '#fff';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#ddd';
+              e.target.style.background = '#fafafa';
+            }}
             {...register('password', {
               required: 'Mật khẩu không được bỏ trống',
               minLength: { value: 6, message: 'Mật khẩu ít nhất 6 ký tự' },
             })}
           />
           {errors.password && (
-            <p className="text-red-500 text-sm mt-1">
+            <p
+              style={{
+                color: '#e74c3c',
+                fontSize: '0.8rem',
+                marginTop: '0.4rem',
+              }}
+            >
               {errors.password.message}
             </p>
           )}
         </div>
 
         {errors.submit && (
-          <p className="text-red-500 text-sm">{errors.submit.message}</p>
+          <p
+            style={{
+              color: '#e74c3c',
+              fontSize: '0.85rem',
+              textAlign: 'center',
+            }}
+          >
+            {errors.submit.message}
+          </p>
         )}
 
-        <button type="submit" disabled={loading} className="btn-primary w-full">
-          {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: '12px',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            color: '#fff',
+            background: '#4fa79d',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            marginTop: '0.5rem',
+            fontFamily: 'Nunito, sans-serif',
+          }}
+          onMouseOver={(e) => {
+            e.target.style.background = '#2d8659';
+          }}
+          onMouseOut={(e) => {
+            e.target.style.background = '#4fa79d';
+          }}
+        >
+          {loading ? 'Đang đăng nhập...' : 'SIGN IN'}
         </button>
       </form>
     </div>
