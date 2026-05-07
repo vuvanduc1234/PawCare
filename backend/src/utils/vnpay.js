@@ -67,7 +67,7 @@ export const createVNPayPaymentUrl = ({ orderCode, amount, ipAddress }) => {
 
     const paymentUrl = process.env.VNPAY_URL + '?' + 
         queryString +
-        '&vnp_SecureHashType=SHA512' +
+       
         '&vnp_SecureHash=' + signed;
 
     console.log('\n  ✅ Payment URL created');
