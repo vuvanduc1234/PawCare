@@ -28,6 +28,19 @@ export const orderService = {
   },
 
   /**
+   * Verify chữ ký VNPay sau khi redirect về FE
+   * GET /api/orders/vnpay-verify?vnp_...
+   */
+  verifyVNPay: async (queryString) => {
+    try {
+      const response = await api.get(`/orders/vnpay-verify${queryString}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  /**
    * Lấy danh sách đơn hàng của user
    * GET /api/orders?status=...&paymentStatus=...&page=...&limit=...
    */
