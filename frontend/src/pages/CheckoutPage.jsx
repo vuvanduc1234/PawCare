@@ -153,6 +153,10 @@ const CheckoutPage = () => {
       // Lấy payment URL từ VNPay
       const paymentResponse = await orderService.getPaymentUrl(order._id);
 
+      console.log('📦 Payment Response:', paymentResponse);
+      console.log('📦 Payment Response.data:', paymentResponse.data);
+      console.log('📦 Payment URL:', paymentResponse.data?.paymentUrl);
+
       if (!paymentResponse.success) {
         setError(paymentResponse.message || 'Lỗi khi tạo URL thanh toán');
         setLoading(false);
@@ -164,8 +168,14 @@ const CheckoutPage = () => {
 
       // Redirect tới VNPay
       setSuccess('✅ Đang chuyển hướng tới VNPay...');
+      const paymentUrl = paymentResponse.data?.paymentUrl;
+      if (!paymentUrl) {
+        setError('❌ Không thể lấy URL thanh toán từ VNPay');
+        setLoading(false);
+        return;
+      }
       setTimeout(() => {
-        window.location.href = paymentResponse.data.paymentUrl;
+        window.location.href = paymentUrl;
       }, 1500);
     } catch (err) {
       console.error('Checkout error:', err);
