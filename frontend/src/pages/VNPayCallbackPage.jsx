@@ -12,7 +12,12 @@ const VNPayCallbackPage = () => {
       try {
         // Gửi toàn bộ query string về server để verify
         const queryStr = window.location.search;
+        console.log('🔗 Callback URL:', window.location.href);
+        console.log('📝 Query String:', queryStr);
+        console.log('⏳ Verifying VNPay signature...');
+
         const response = await orderService.verifyVNPay(queryStr);
+        console.log('✅ Verify Response:', response);
 
         if (response.success && response.isPaid) {
           setStatus('success');
@@ -20,7 +25,7 @@ const VNPayCallbackPage = () => {
           setStatus('failed');
         }
       } catch (error) {
-        console.error('Lỗi verify:', error);
+        console.error('❌ Verify error:', error);
         setStatus('failed');
       }
     };
