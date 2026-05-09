@@ -8,6 +8,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import PawShopPage from './pages/PawShopPage';
 import CheckoutPage from './pages/CheckoutPage';
 import VNPayCallbackPage from './pages/VNPayCallbackPage';
+import AuthPage from './pages/AuthPage';
 
 // Auth pages
 import LoginPage from './pages/Auth/LoginPage';
@@ -65,9 +66,12 @@ function App() {
         <Routes>
           <Route path="/" element={<RoleBasedRedirect />} />
 
-          {/* Auth routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          {/* Auth - Unified Auth Page */}
+          <Route path="/auth" element={<AuthPage />} />
+
+          {/* Legacy auth routes - redirect to /auth */}
+          <Route path="/login" element={<Navigate to="/auth" replace />} />
+          <Route path="/register" element={<Navigate to="/auth" replace />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
