@@ -39,9 +39,34 @@ export const productService = {
    * Tạo sản phẩm mới (chỉ seller)
    * POST /api/products
    */
-  createProduct: async (productData) => {
+  createProduct: async (productData, images = []) => {
     try {
-      const response = await api.post('/products', productData);
+      const formData = new FormData();
+      formData.append('name', productData.name);
+      formData.append('description', productData.description);
+      formData.append('price', productData.price);
+      formData.append('discount', productData.discount || 0);
+      formData.append('category', productData.category);
+      formData.append('stock', productData.stock);
+      formData.append('sku', productData.sku || '');
+
+      if (productData.petTypes && productData.petTypes.length > 0) {
+        productData.petTypes.forEach((type) => {
+          formData.append('petTypes[]', type);
+        });
+      }
+
+      if (productData.tags && productData.tags.length > 0) {
+        formData.append('tags', JSON.stringify(productData.tags));
+      }
+
+      if (images && images.length > 0) {
+        images.forEach((image) => {
+          formData.append('images', image);
+        });
+      }
+
+      const response = await api.post('/products', formData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -52,9 +77,37 @@ export const productService = {
    * Cập nhật sản phẩm (chỉ owner hoặc admin)
    * PUT /api/products/:id
    */
-  updateProduct: async (id, productData) => {
+  updateProduct: async (id, productData, images = []) => {
     try {
-      const response = await api.put(`/products/${id}`, productData);
+      const formData = new FormData();
+      
+      Object.keys(productData).forEach(key => {
+        if (key !== 'images' && productData[key] != null) {
+          if (Array.isArray(productData[key])) {
+            if (key === 'petTypes') {
+              productData[key].forEach((item) => {
+                formData.append(`${key}[]`, item);
+              });
+            } else {
+              formData.append(key, JSON.stringify(productData[key]));
+            }
+          } else if (typeof productData[key] === 'object') {
+            formData.append(key, JSON.stringify(productData[key]));
+          } else {
+            formData.append(key, productData[key]);
+          }
+        }
+      });
+
+      if (images && images.length > 0) {
+        images.forEach((image) => {
+          if (image instanceof File) {
+            formData.append('images', image);
+          }
+        });
+      }
+
+      const response = await api.put(`/products/${id}`, formData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import busboy from 'busboy';
 import { errorHandler } from './middleware/errorHandler.js';
 
 // Import routes
@@ -42,6 +43,58 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+/**
+ * Middleware: Parse FormData text fields from multipart/form-data requests
+ * This ensures that text fields from FormData are captured into req.body
+ * while multer handles file uploads
+ */
+app.use((req, res, next) => {
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+    const contentType = req.headers['content-type'];
+    
+    if (contentType && contentType.includes('multipart/form-data')) {
+      const bb = busboy({ headers: req.headers, limits: { fileSize: 10 * 1024 * 1024 } });
+      
+      // Initialize req.body if not already done
+      if (!req.body) req.body = {};
+      
+      // Parse form fields
+      bb.on('field', (fieldname, val) => {
+        // Handle array fields like petTypes[]
+        if (fieldname.endsWith('[]')) {
+          const fieldKey = fieldname.slice(0, -2); // Remove []
+          if (!req.body[fieldKey]) {
+            req.body[fieldKey] = [];
+          }
+          if (Array.isArray(req.body[fieldKey])) {
+            req.body[fieldKey].push(val);
+          } else {
+            req.body[fieldKey] = [req.body[fieldKey], val];
+          }
+        } else {
+          req.body[fieldname] = val;
+        }
+      });
+      
+      // When busboy finishes, call next to let multer handle files
+      bb.on('finish', () => {
+        next();
+      });
+      
+      bb.on('error', (err) => {
+        console.error('Busboy error:', err);
+        next();
+      });
+      
+      req.pipe(bb);
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

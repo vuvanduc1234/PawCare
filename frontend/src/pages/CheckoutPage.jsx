@@ -138,8 +138,12 @@ const CheckoutPage = () => {
         shippingAddress: formData,
       };
 
+      console.log('📋 Creating order with data:', orderData);
+
       // Tạo đơn hàng
       const orderResponse = await orderService.createOrder(orderData);
+
+      console.log('✅ Order Response:', orderResponse);
 
       if (!orderResponse.success) {
         setError(orderResponse.message || 'Lỗi khi tạo đơn hàng');
@@ -148,9 +152,12 @@ const CheckoutPage = () => {
       }
 
       const order = orderResponse.data;
-      console.log('Order created:', order);
+      console.log('✅ Order created:', order);
+      console.log('📌 Order ID:', order._id);
+      console.log('📌 Order Code:', order.orderCode);
 
       // Lấy payment URL từ VNPay
+      console.log('🔗 Getting payment URL for order:', order._id);
       const paymentResponse = await orderService.getPaymentUrl(order._id);
 
       console.log('📦 Payment Response:', paymentResponse);
@@ -178,7 +185,9 @@ const CheckoutPage = () => {
         window.location.href = paymentUrl;
       }, 1500);
     } catch (err) {
-      console.error('Checkout error:', err);
+      console.error('❌ Checkout error:', err);
+      console.error('❌ Error message:', err.message);
+      console.error('❌ Error details:', JSON.stringify(err, null, 2));
       setError(err.message || 'Lỗi thanh toán');
       setLoading(false);
     }

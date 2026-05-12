@@ -66,29 +66,87 @@ export const getProductById = async (req, res) => {
  */
 export const createProduct = async (req, res) => {
   try {
-    console.log('DEBUG createProduct - req.user:', req.user);
-    console.log('DEBUG createProduct - req.headers.authorization:', req.headers.authorization);
+    console.log('DEBUG createProduct - req.body:', req.body);
+    console.log('DEBUG createProduct - req.files:', req.files?.length);
     
-    const { name, description, price, discount, category, petTypes, stock, sku, tags } = req.body;
+    let { name, description, price, discount, category, stock, sku, tags } = req.body;
+    let petTypes = req.body.petTypes;
     
-    if (!name || !description || !price || !category || !stock) {
-      return res.status(400).json({ success: false, message: 'Thông tin sản phẩm không đầy đủ' });
+    // Log the received values for debugging
+    console.log('DEBUG - Received fields:', { name, description, price, category, stock, petTypes });
+    
+    // Handle FormData array notation: petTypes[] comes as array or string
+    if (Array.isArray(petTypes)) {
+      // Already an array - good
+    } else if (petTypes && typeof petTypes === 'string') {
+      // Convert single string to array
+      petTypes = [petTypes];
+    } else if (!petTypes) {
+      petTypes = ['dog', 'cat']; // default
+    }
+    
+    // Parse tags if it's a JSON string
+    let tagsArray = [];
+    if (tags) {
+      try {
+        if (typeof tags === 'string' && tags.startsWith('[')) {
+          tagsArray = JSON.parse(tags);
+        } else if (typeof tags === 'string') {
+          tagsArray = tags.split(',').map(t => t.trim()).filter(t => t);
+        } else if (Array.isArray(tags)) {
+          tagsArray = tags;
+        }
+      } catch (e) {
+        console.error('Error parsing tags:', e);
+        tagsArray = [];
+      }
+    }
+    
+    // Convert stock and price to numbers
+    price = parseFloat(price);
+    stock = parseInt(stock);
+    discount = parseFloat(discount || 0);
+    
+    // Log after conversion for debugging
+    console.log('DEBUG - After conversion:', { name, description, price, stock, category, discount });
+    
+    // Validation with detailed error messages
+    const errors = [];
+    if (!name || name.trim() === '') errors.push('Tên sản phẩm');
+    if (!description || description.trim() === '') errors.push('Mô tả sản phẩm');
+    if (!price || isNaN(price)) errors.push('Giá sản phẩm (phải là số)');
+    if (!category || category.trim() === '') errors.push('Danh mục');
+    if (!stock || isNaN(stock)) errors.push('Tồn kho (phải là số)');
+    
+    if (errors.length > 0) {
+      console.error('Validation errors:', errors);
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Thông tin sản phẩm không đầy đủ. Thiếu: ' + errors.join(', ') 
+      });
+    }
+
+    // Process images from multer
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      images = req.files.map(f => ({ 
+        url: f.path || f.filename, 
+        public_id: f.filename 
+      }));
     }
 
     const product = new Product({
       name,
       description,
       price,
-      discount: discount || 0,
+      discount,
       category,
-      petTypes: petTypes || ['dog', 'cat'],
+      petTypes,
       stock,
       sku: sku || `SKU-${Date.now()}`,
-      tags: tags || [],
+      tags: tagsArray,
       seller: req.user._id,
-      images: req.files?.length > 0 
-        ? req.files.map(f => ({ url: f.path, public_id: f.filename }))
-        : [],
+      images,
     });
 
     await product.save();
@@ -99,6 +157,7 @@ export const createProduct = async (req, res) => {
       data: product,
     });
   } catch (error) {
+    console.error('Error creating product:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -119,11 +178,58 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Không có quyền cập nhật' });
     }
 
-    Object.assign(product, req.body);
+    // Parse FormData fields
+    let { name, description, price, discount, category, stock, sku, tags } = req.body;
+    let petTypes = req.body.petTypes;
+    
+    // Handle FormData array notation
+    if (petTypes) {
+      if (!Array.isArray(petTypes)) {
+        petTypes = [petTypes];
+      }
+    }
+    
+    // Parse tags if it's a JSON string
+    let tagsArray = tags;
+    if (tags && typeof tags === 'string') {
+      try {
+        if (tags.startsWith('[')) {
+          tagsArray = JSON.parse(tags);
+        } else {
+          tagsArray = tags.split(',').map(t => t.trim()).filter(t => t);
+        }
+      } catch (e) {
+        tagsArray = [];
+      }
+    }
+    
+    // Build update object
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (description) updateData.description = description;
+    if (price) updateData.price = parseFloat(price);
+    if (discount !== undefined) updateData.discount = parseFloat(discount);
+    if (category) updateData.category = category;
+    if (stock) updateData.stock = parseInt(stock);
+    if (sku) updateData.sku = sku;
+    if (tagsArray) updateData.tags = tagsArray;
+    if (petTypes) updateData.petTypes = petTypes;
+    
+    // Handle new images from multer
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map(f => ({ 
+        url: f.path || f.filename, 
+        public_id: f.filename 
+      }));
+      updateData.images = newImages;
+    }
+
+    Object.assign(product, updateData);
     await product.save();
 
     res.json({ success: true, message: 'Cập nhật sản phẩm thành công', data: product });
   } catch (error) {
+    console.error('Error updating product:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

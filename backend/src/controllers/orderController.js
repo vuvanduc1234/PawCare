@@ -132,16 +132,20 @@ export const getPaymentUrl = async (req, res) => {
 /**
  * [GET] /api/orders/vnpay-verify
  * VERIFY PAYMENT - FE gọi API này để kiểm tra chữ ký sau khi khách quay lại
+ *
+ * ✅ FIX: Dùng req.originalUrl để lấy raw query string (giữ nguyên encoded values),
+ *         thay vì req.query đã bị Express decode — tránh hash mismatch.
  */
 export const verifyPayment = async (req, res) => {
   try {
-    const vnp_Params = req.query;
+    // ✅ FIX: Lấy raw query string từ URL gốc, KHÔNG dùng req.query
+    const rawQuery = req.originalUrl.split('?')[1] || '';
 
     console.log('\n📩 [VERIFY PAYMENT REQUEST]');
-    console.log('  Query params:', Object.keys(vnp_Params).length, 'params');
+    console.log('  Raw query string (first 200):', rawQuery.substring(0, 200));
 
-    // 1. Kiểm tra chữ ký bảo mật
-    const isValid = verifyVNPaySignature(vnp_Params);
+    // 1. Kiểm tra chữ ký bảo mật — truyền raw string vào
+    const isValid = verifyVNPaySignature(rawQuery);
 
     if (!isValid) {
       console.error('❌ [VERIFY FAILED] Invalid VNPay Signature');
@@ -150,10 +154,10 @@ export const verifyPayment = async (req, res) => {
 
     console.log('✅ [VERIFY SUCCESS] Signature verified');
 
-    // 2. Kiểm tra mã phản hồi (ResponseCode)
-    const responseCode = vnp_Params['vnp_ResponseCode'];
-    const orderCode = vnp_Params['vnp_TxnRef'];
-    const transactionNo = vnp_Params['vnp_TransactionNo'];
+    // 2. Dùng req.query bình thường để đọc giá trị (đã decoded, tiện dùng)
+    const responseCode = req.query['vnp_ResponseCode'];
+    const orderCode = req.query['vnp_TxnRef'];
+    const transactionNo = req.query['vnp_TransactionNo'];
 
     console.log('  Order Code:', orderCode);
     console.log('  Response Code:', responseCode);
@@ -196,10 +200,14 @@ export const verifyPayment = async (req, res) => {
  * CALLBACK (Dành cho VNPAY IPN - Server call Server)
  * Tương tự verifyPayment nhưng trả về JSON format của VNPAY
  * Thường dùng để cập nhật đơn hàng kể cả khi khách tắt trình duyệt
+ *
+ * ✅ FIX: Cũng dùng raw query string thay vì req.query
  */
 export const vnpayIPN = async (req, res) => {
   try {
-    const isValid = verifyVNPaySignature(req.query);
+    // ✅ FIX: raw query string
+    const rawQuery = req.originalUrl.split('?')[1] || '';
+    const isValid = verifyVNPaySignature(rawQuery);
 
     if (isValid) {
       const responseCode = req.query['vnp_ResponseCode'];

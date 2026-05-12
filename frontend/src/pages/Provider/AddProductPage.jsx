@@ -10,6 +10,8 @@ const AddProductPage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -43,6 +45,34 @@ const AddProductPage = () => {
     { value: 'other', label: '🦎 Khác' },
   ];
 
+  // Handle image selection
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length + images.length > 5) {
+      setMessage('❌ Tối đa 5 ảnh');
+      return;
+    }
+
+    setImages([...images, ...files]);
+
+    // Create previews
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreviews((prev) => [...prev, e.target.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    setMessage('');
+  };
+
+  // Remove image
+  const removeImage = (index) => {
+    setImages(images.filter((_, i) => i !== index));
+    setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -73,6 +103,11 @@ const AddProductPage = () => {
       return;
     }
 
+    if (images.length === 0) {
+      setMessage('❌ Vui lòng chọn ít nhất 1 ảnh');
+      return;
+    }
+
     try {
       setLoading(true);
       const productData = {
@@ -86,7 +121,7 @@ const AddProductPage = () => {
           .filter((t) => t),
       };
 
-      const response = await productService.createProduct(productData);
+      const response = await productService.createProduct(productData, images);
 
       if (response.success) {
         setMessage('✅ Thêm sản phẩm thành công!');
@@ -513,6 +548,144 @@ const AddProductPage = () => {
                   boxSizing: 'border-box',
                 }}
               />
+            </div>
+
+            {/* Images */}
+            <div style={{ marginBottom: '2rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  marginBottom: '0.75rem',
+                  color: '#333',
+                }}
+              >
+                📸 Hình ảnh sản phẩm (Tối đa 5 ảnh) *
+              </label>
+
+              {/* Image preview */}
+              {imagePreviews.length > 0 && (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns:
+                      'repeat(auto-fill, minmax(120px, 1fr))',
+                    gap: '1rem',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  {imagePreviews.map((preview, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        position: 'relative',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <img
+                        src={preview}
+                        alt={`Preview ${index}`}
+                        style={{
+                          width: '100%',
+                          height: '120px',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        style={{
+                          position: 'absolute',
+                          top: '4px',
+                          right: '4px',
+                          background: '#ff4444',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '50%',
+                          width: '28px',
+                          height: '28px',
+                          cursor: 'pointer',
+                          fontSize: '16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload button */}
+              {images.length < 5 && (
+                <label
+                  style={{
+                    display: 'block',
+                    cursor: 'pointer',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      border: '2px dashed #d9eded',
+                      borderRadius: '10px',
+                      padding: '2rem',
+                      textAlign: 'center',
+                      transition: 'all 0.3s ease',
+                      background: '#f8faf9',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#1a7a6e';
+                      e.currentTarget.style.background = '#e8f5f2';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#d9eded';
+                      e.currentTarget.style.background = '#f8faf9';
+                    }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
+                      📤
+                    </div>
+                    <p
+                      style={{
+                        fontSize: '0.95rem',
+                        fontWeight: 600,
+                        color: '#333',
+                        margin: '0 0 0.25rem 0',
+                      }}
+                    >
+                      Chọn ảnh ({images.length}/5)
+                    </p>
+                    <p
+                      style={{ fontSize: '0.85rem', color: '#888', margin: 0 }}
+                    >
+                      Tối đa 5 ảnh, JPEG/PNG
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              )}
+
+              <p
+                style={{
+                  fontSize: '0.8rem',
+                  color: '#888',
+                  margin: '0.5rem 0 0 0',
+                }}
+              >
+                💡 Ảnh chất lượng cao sẽ giúp thu hút khách hàng
+              </p>
             </div>
 
             {/* Buttons */}

@@ -3,7 +3,6 @@ import moment from 'moment';
 
 /**
  * Hàm sắp xếp các tham số theo alphabet (bắt buộc của VNPay)
- * VNPay yêu cầu: chỉ include non-empty values, sort by key name
  */
 const sortObject = (obj) => {
     let sorted = {};
@@ -44,13 +43,12 @@ export const createVNPayPaymentUrl = ({ orderCode, amount, ipAddress }) => {
 
     const sorted = sortObject(vnp_Params);
 
-    // ✅ VNPAY CHUẨN: Hash từ RAW values (không encode)
-    // VNPay server tính hash từ raw query string: key=value&key2=value2
+    // ✅ CHUẨN VNPAY: hash từ RAW values (không encode)
     const signData = Object.keys(sorted)
         .map(key => `${key}=${sorted[key]}`)
         .join('&');
 
-    console.log('\n  Sign Data (RAW - không encode, trước khi hash):');
+    console.log('\n  Sign Data (raw, before hash):');
     console.log('  ', signData.substring(0, 300) + (signData.length > 300 ? '...' : ''));
 
     const hmac = crypto.createHmac('sha512', process.env.VNPAY_HASH_SECRET);
@@ -59,8 +57,8 @@ export const createVNPayPaymentUrl = ({ orderCode, amount, ipAddress }) => {
     console.log('\n  🔒 SHA512 Hash (SecureHash):', signed);
     console.log('  Hash Secret used: [length=' + process.env.VNPAY_HASH_SECRET?.length + ']');
 
-    // Tạo query string cho URL - ENCODE individual values để URL hợp lệ
-    // Nhưng hash được tính từ raw values ở trên
+    // Encode từng VALUE khi ghép URL (chỉ để URL hợp lệ, KHÔNG liên quan hash)
+    // ⚠️ CHỈ encode value, KHÔNG encode key!
     const queryString = Object.keys(sorted)
         .map(key => `${key}=${encodeURIComponent(sorted[key])}`)
         .join('&');
@@ -71,37 +69,47 @@ export const createVNPayPaymentUrl = ({ orderCode, amount, ipAddress }) => {
 
     console.log('\n  ✅ Payment URL created');
     console.log('  URL Length:', paymentUrl.length);
-    console.log('  Hash Secret length:', process.env.VNPAY_HASH_SECRET?.length);
     console.log('');
 
     return { paymentUrl };
 };
 
 // --- HÀM KIỂM TRA CHỮ KÝ PHẢN HỒI ---
-// Nhận vào req.query đã được Express auto-decode (raw values)
-export const verifyVNPaySignature = (vnp_Params) => {
-    const secureHash = vnp_Params['vnp_SecureHash'];
+// Nhận vào raw query string từ req.originalUrl để tránh Express decode mất thông tin
+export const verifyVNPaySignature = (rawQueryString) => {
+    // Parse thủ công: decode key và value để lấy giá trị thực (raw)
+    const params = {};
+    rawQueryString.split('&').forEach(pair => {
+        const idx = pair.indexOf('=');
+        if (idx === -1) return;
+        const key = decodeURIComponent(pair.substring(0, idx));
+        // Xử lý + thành space (application/x-www-form-urlencoded) rồi decode
+        const rawVal = pair.substring(idx + 1).replace(/\+/g, '%20');
+        params[key] = decodeURIComponent(rawVal);
+    });
+
+    const secureHash = params['vnp_SecureHash'];
 
     console.log('\n✅ [VNPAY SIGNATURE VERIFICATION]');
-    console.log('  Transaction Ref:', vnp_Params['vnp_TxnRef']);
-    console.log('  Response Code:', vnp_Params['vnp_ResponseCode']);
+    console.log('  Transaction Ref:', params['vnp_TxnRef']);
+    console.log('  Response Code:', params['vnp_ResponseCode']);
     console.log('  Received SecureHash:', secureHash);
-    console.log('  Total params received:', Object.keys(vnp_Params).length);
+    console.log('  Total params received:', Object.keys(params).length);
 
-    const vnp_ParamsClone = { ...vnp_Params };
+    const paramsClone = { ...params };
+    delete paramsClone['vnp_SecureHash'];
+    delete paramsClone['vnp_SecureHashType'];
 
-    delete vnp_ParamsClone['vnp_SecureHash'];
-    delete vnp_ParamsClone['vnp_SecureHashType'];
-
-    const sorted = sortObject(vnp_ParamsClone);
+    const sorted = sortObject(paramsClone);
 
     console.log('  Params after sorting:', Object.keys(sorted).length);
 
-    // ✅ VNPAY CHUẨN: Hash từ RAW values (không encode)
-    // Express đã auto-decode req.query, nên sorted chứa raw values
+    // ✅ CHUẨN VNPAY: hash từ RAW values (không encode) — khớp với lúc tạo URL
     const signData = Object.keys(sorted)
         .map(key => `${key}=${sorted[key]}`)
         .join('&');
+
+    console.log('  Sign Data (raw):', signData.substring(0, 300));
 
     const hmac = crypto.createHmac('sha512', process.env.VNPAY_HASH_SECRET);
     const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
@@ -111,10 +119,9 @@ export const verifyVNPaySignature = (vnp_Params) => {
 
     if (secureHash !== signed) {
         console.log('\n  ❌ HASH MISMATCH DEBUG INFO:');
-        console.log('  📊 Sign Data (first 500 chars):');
-        console.log('  ', signData.substring(0, 500));
-        console.log('\n  🔑 VNPAY_HASH_SECRET length:', process.env.VNPAY_HASH_SECRET?.length);
-        console.log('\n  📋 All params:');
+        console.log('  Sign Data (full):', signData);
+        console.log('  VNPAY_HASH_SECRET length:', process.env.VNPAY_HASH_SECRET?.length);
+        console.log('  All params:');
         Object.keys(sorted).forEach(key => {
             console.log(`    ${key}: ${sorted[key]}`);
         });
